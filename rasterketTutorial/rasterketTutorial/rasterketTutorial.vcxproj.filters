@@ -5,12 +5,17 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{fee397b1-9418-474a-9023-faff4ac276a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3dclass.h" />
     <ClInclude Include="inputclass.h" />
     <ClInclude Include="systemclass.h" />
     <ClInclude Include="applicationclass.h" />
+    <ClInclude Include="colorshaderclass.h" />
+    <ClInclude Include="modelclass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="inputclass.cpp" />
@@ -18,5 +23,15 @@
     <ClCompile Include="systemclass.cpp" />
     <ClCompile Include="applicationclass.cpp" />
     <ClCompile Include="d3dclass.cpp" />
+    <ClCompile Include="colorshaderclass.cpp" />
+    <ClCompile Include="modelclass.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="colorPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="colorVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

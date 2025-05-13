@@ -45,6 +45,8 @@ public:
 	D3DClass& operator=(const D3DClass& _Other) = delete;
 	D3DClass& operator=(D3DClass&& _Other) noexcept = delete;
 
+	ID3D11Device* GetDevice() const { return m_device; }
+	ID3D11DeviceContext* GetDeviceContext() const { return m_deviceContext; }
 
 	/**
 	 * @brief		Initialize		다이렉트 3D 초기화

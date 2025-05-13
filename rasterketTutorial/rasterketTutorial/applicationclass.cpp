@@ -7,6 +7,8 @@
 ApplicationClass::ApplicationClass()
 {
 	m_Direct3D = 0;
+	m_Model = 0;
+	m_ColorShader = 0;
 }
 
 ApplicationClass::~ApplicationClass()
@@ -27,6 +29,27 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 		return false;
 	}
 
+	// Ä«¸Þ¶ó °´Ã¼ »ý¼º
+	// 
+	// Model °´Ã¼ »ý¼º
+	m_Model = new ModelClass;
+	result = m_Model->Initialize(m_Direct3D->GetDevice());
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize Model", L"Error", MB_OK);
+		return false;
+	}
+
+	// ColorShader »ý¼º
+	m_ColorShader = new ColorShaderClass;
+	result = m_ColorShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize ColorShader", L"Error", MB_OK);
+		return false;
+	}
+
+
 	return true;
 }
 
@@ -37,6 +60,20 @@ void ApplicationClass::Shutdown()
 		m_Direct3D->Shutdown();
 		delete m_Direct3D;
 		m_Direct3D = 0;
+	}
+
+	if (m_Model)
+	{
+		m_Model->Shutdown();
+		delete m_Model;
+		m_Model = 0;
+	}
+
+	if (m_ColorShader)
+	{
+		m_ColorShader->Shutdown();
+		delete m_ColorShader;
+		m_ColorShader = 0;
 	}
 }
 
@@ -56,6 +93,12 @@ bool ApplicationClass::Frame()
 bool ApplicationClass::Render()
 {
 	m_Direct3D->BeginScene(0.5f, 0.5f, 0.5f, 1.0f);
+
+	// ¸ðµ¨ ·»´õ
+	m_Model->Render(m_Direct3D->GetDeviceContext());
+
+	// ½¦ÀÌ´õ ·»´õ
+	// m_ColorShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(), );
 
 	m_Direct3D->EndScene();
 

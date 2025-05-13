@@ -14,6 +14,8 @@
 
 #include <windows.h>
 #include "d3dclass.h"
+#include "colorshaderclass.h"
+#include "modelclass.h"
 
 
 //---------------------------------------------------------------------------------------
@@ -77,6 +79,9 @@ private:
 
 private:
 	D3DClass* m_Direct3D; // ·»´õ¸µÀ» À§ÇÑ d3d °´Ã¼
+	ModelClass* m_Model;
+	ColorShaderClass* m_ColorShader;
+
 };
 
 #endif // !__DEFINE_APLLICATIONCLASS_H_
