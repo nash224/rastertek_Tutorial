@@ -17,6 +17,7 @@
     <ClInclude Include="colorshaderclass.h" />
     <ClInclude Include="modelclass.h" />
     <ClInclude Include="cameraclass.h" />
+    <ClInclude Include="ShapeClass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="inputclass.cpp" />
@@ -27,6 +28,7 @@
     <ClCompile Include="colorshaderclass.cpp" />
     <ClCompile Include="modelclass.cpp" />
     <ClCompile Include="cameraclass.cpp" />
+    <ClCompile Include="ShapeClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="colorVS.hlsl">

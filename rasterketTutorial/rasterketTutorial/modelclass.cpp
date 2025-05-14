@@ -53,10 +53,12 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	D3D11_SUBRESOURCE_DATA vertexData;
 	D3D11_SUBRESOURCE_DATA indexData;
 
-	// 도형을 구성하는 점 3개
-	m_vertexCount = 3;
-	// 도형의 인덱스 수
-	m_indexCount = 3;
+	XMFLOAT4 Color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+
+	// 도형을 구성하는 점의 수
+	m_vertexCount = 4;
+	// 도형 인덱스 수
+	m_indexCount = 6;
 
 	vertices = new VertexType[m_vertexCount];
 	if (!vertices)
@@ -70,19 +72,27 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 		goto failed;
 	}
 
-	// 삼각형을 이루는 점의 위치, 색상 정보 입력
-	vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);
-	vertices[0].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	// 도형 이루는 점의 위치, 색상 정보 입력
+	// 사각형 점 위치:	0  1
+	//					2  3
+	vertices[0].position = XMFLOAT3(-0.5f, 0.5f, 0.0f);
+	vertices[0].color = Color;
 
-	vertices[1].position = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	vertices[1].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	vertices[1].position = XMFLOAT3(0.5f, 0.5f, 0.0f);
+	vertices[1].color = Color;
 
-	vertices[2].position = XMFLOAT3(1.0f, -1.0f, 0.0f);
-	vertices[2].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	vertices[2].position = XMFLOAT3(-0.5f, -0.5f, 0.0f);
+	vertices[2].color = Color;
+
+	vertices[3].position = XMFLOAT3(0.5f, -0.5f, 0.0f);
+	vertices[3].color = Color;
 
 	indices[0] = 0;
 	indices[1] = 1;
-	indices[2] = 2;
+	indices[2] = 3;
+	indices[3] = 0;
+	indices[4] = 3;
+	indices[5] = 2;
 
 	vertexBufferDesc.Usage               = D3D11_USAGE_DEFAULT;                // gpu에서 읽기 및 쓰기 
 	vertexBufferDesc.ByteWidth           = sizeof(VertexType) * m_vertexCount; // 도형을 이루는 점의 전체 크기
