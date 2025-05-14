@@ -53,7 +53,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	D3D11_SUBRESOURCE_DATA vertexData;
 	D3D11_SUBRESOURCE_DATA indexData;
 
-	XMFLOAT4 Color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	XMFLOAT4 Color = XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f);
 
 	// 도형을 구성하는 점의 수
 	m_vertexCount = 4;
