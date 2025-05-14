@@ -48,6 +48,10 @@ public:
 	ID3D11Device* GetDevice() const { return m_device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return m_deviceContext; }
 
+	void GetWorldMatrix(DirectX::XMMATRIX& worldMatrix) const { worldMatrix = m_WorldMatrix; }
+	void GetProjectionMatrix(DirectX::XMMATRIX& projectionMatrix) const { projectionMatrix = m_projectionMatrix; }
+	void GetOrthoMatrix(DirectX::XMMATRIX& orthooMatrix) const { orthooMatrix = m_orthoMatrix; }
+
 	/**
 	 * @brief		Initialize		다이렉트 3D 초기화
 	 *

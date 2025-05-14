@@ -46,8 +46,32 @@ public:
 	void Render(ID3D11DeviceContext* deviceContext);
 
 private:
+
+	/**
+	 * @brief		InitializeBuffers		기하 도형을 표현하기 위한 
+											버텍스 버퍼 및 인덱스 버퍼 생성
+	 *
+	 * @param		device		D3D Device 핸들
+	 *
+	 * @return		bool		버퍼의 생성 유무
+	 */
 	bool InitializeBuffers(ID3D11Device* device);
+
+	/**
+	 * @brief		ShutdownBuffers			기하 도형을 구성하기 위한 자원을 반환한다.
+	 *
+	 * @return		void
+	 */
 	void ShutdownBuffers();
+
+	/**
+	 * @brief		RenderBuffers			기하 도형의 인덱스 버퍼 및 버텍스 버퍼 세팅,
+											기하 도형을 그리는 방법 세팅
+	 *
+	 * @param		deviceContext			모델에 대한 기하 도형을 렌더링 파이프라인에 부착할 핸들
+	 *
+	 * @return		void
+	 */
 	void RenderBuffers(ID3D11DeviceContext* deviceContext);
 
 private:

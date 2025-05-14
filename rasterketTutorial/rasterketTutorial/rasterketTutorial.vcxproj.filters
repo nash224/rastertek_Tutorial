@@ -16,6 +16,7 @@
     <ClInclude Include="applicationclass.h" />
     <ClInclude Include="colorshaderclass.h" />
     <ClInclude Include="modelclass.h" />
+    <ClInclude Include="cameraclass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="inputclass.cpp" />
@@ -25,12 +26,13 @@
     <ClCompile Include="d3dclass.cpp" />
     <ClCompile Include="colorshaderclass.cpp" />
     <ClCompile Include="modelclass.cpp" />
+    <ClCompile Include="cameraclass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="colorPS.hlsl">
+    <FxCompile Include="colorVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="colorVS.hlsl">
+    <FxCompile Include="Engine\colorPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

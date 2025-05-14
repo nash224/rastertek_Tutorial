@@ -79,7 +79,7 @@ void ColorShaderClass::Shutdown()
 	ShutdownShader();
 }
 
-void ColorShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
+bool ColorShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
 	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix)
 {
 	bool result;
@@ -88,11 +88,13 @@ void ColorShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount
 	result = SetShaderParamters(deviceContext, worldMatrix, viewMatrix, projectionMatrix);
 	if (!result)
 	{
-		return;
+		return false;
 	}
 
 	// 입력 레이아웃, 쉐이더 세팅 및 Draw Call
 	RenderShader(deviceContext, indexCount);
+
+	return true;
 }
 
 // 입력 레이아웃, 상수 버퍼, 쉐이더 인터페이스를 생성
@@ -164,7 +166,7 @@ bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* 
 	}
 
 	// 픽셀 쉐이더 생성
-	result = device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), NULL, &m_vertexShader);
+	result = device->CreatePixelShader(pixelShaderBuffer->GetBufferPointer(), pixelShaderBuffer->GetBufferSize(), NULL, &m_pixelShader);
 	if (FAILED(result))
 	{
 		return false;

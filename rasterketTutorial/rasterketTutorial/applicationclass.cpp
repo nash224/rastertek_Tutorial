@@ -7,6 +7,7 @@
 ApplicationClass::ApplicationClass()
 {
 	m_Direct3D = 0;
+	m_Camera = 0;
 	m_Model = 0;
 	m_ColorShader = 0;
 }
@@ -30,7 +31,9 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	}
 
 	// 카메라 객체 생성
-	// 
+	m_Camera = new CameraClass;
+	m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
+	
 	// Model 객체 생성
 	m_Model = new ModelClass;
 	result = m_Model->Initialize(m_Direct3D->GetDevice());
@@ -60,6 +63,12 @@ void ApplicationClass::Shutdown()
 		m_Direct3D->Shutdown();
 		delete m_Direct3D;
 		m_Direct3D = 0;
+	}
+
+	if (m_Camera)
+	{
+		delete m_Camera;
+		m_Camera = 0;
 	}
 
 	if (m_Model)
@@ -92,14 +101,31 @@ bool ApplicationClass::Frame()
 
 bool ApplicationClass::Render()
 {
-	m_Direct3D->BeginScene(0.5f, 0.5f, 0.5f, 1.0f);
+	DirectX::XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
+	bool result;
 
-	// 모델 렌더
+	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// 뷰 행렬 업데이트
+	m_Camera->Render();
+
+	// WVP 초기화
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetProjectionMatrix(projectionMatrix);
+
+	// 기하 도형 입력 세팅
 	m_Model->Render(m_Direct3D->GetDeviceContext());
 
-	// 쉐이더 렌더
-	// m_ColorShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(), );
+	// 상수버퍼, 버텍스 쉐이더, 픽셀쉐이더 세팅, Draw Call
+	result = m_ColorShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),	
+		worldMatrix, viewMatrix, projectionMatrix);
+	if (!result)
+	{
+		return false;
+	}
 
+	// 화면에 출력
 	m_Direct3D->EndScene();
 
 	return true;

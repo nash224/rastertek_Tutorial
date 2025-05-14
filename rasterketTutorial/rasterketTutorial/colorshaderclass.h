@@ -75,9 +75,9 @@ public:
 	 * @param		viewMarix			뷰 행렬
 	 * @param		projectionMarix		투영 행렬
 	 *
-	 * @return		void
+	 * @return		bool				상수버퍼 세팅 유무
 	 */
-	void Render(ID3D11DeviceContext* deviceContext, int indexCount, 
+	bool Render(ID3D11DeviceContext* deviceContext, int indexCount,
 		DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix);
 
 private:
