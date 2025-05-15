@@ -14,7 +14,7 @@
 
 #include <windows.h>
 #include "d3dclass.h"
-#include "colorshaderclass.h"
+#include "textureshaderclass.h"
 #include "modelclass.h"
 #include "cameraclass.h"
 
@@ -82,7 +82,7 @@ private:
 	D3DClass* m_Direct3D; // ·»´õ¸µÀ» À§ÇÑ d3d °´Ã¼
 	CameraClass* m_Camera;
 	ModelClass* m_Model;
-	ColorShaderClass* m_ColorShader;
+	TextureShaderClass* m_TextureShader;
 
 };
 

@@ -5,7 +5,7 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Shader">
+    <Filter Include="Engine">
       <UniqueIdentifier>{fee397b1-9418-474a-9023-faff4ac276a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -18,6 +18,7 @@
     <ClInclude Include="modelclass.h" />
     <ClInclude Include="cameraclass.h" />
     <ClInclude Include="ShapeClass.h" />
+    <ClInclude Include="textureshaderclass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="inputclass.cpp" />
@@ -29,13 +30,20 @@
     <ClCompile Include="modelclass.cpp" />
     <ClCompile Include="cameraclass.cpp" />
     <ClCompile Include="ShapeClass.cpp" />
+    <ClCompile Include="textureshaderclass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="colorVS.hlsl">
-      <Filter>Shader</Filter>
+      <Filter>Engine</Filter>
     </FxCompile>
     <FxCompile Include="Engine\colorPS.hlsl">
-      <Filter>Shader</Filter>
+      <Filter>Engine</Filter>
+    </FxCompile>
+    <FxCompile Include="Engine\textureVS.hlsl">
+      <Filter>Engine</Filter>
+    </FxCompile>
+    <FxCompile Include="Engine\texturePS.hlsl">
+      <Filter>Engine</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
