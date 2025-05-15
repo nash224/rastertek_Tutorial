@@ -13,6 +13,8 @@ ModelClass::ModelClass()
 
 	m_vertexBuffer = 0;
 	m_indexBuffer = 0;
+
+	m_texture = 0;
 }
 
 ModelClass::~ModelClass()
@@ -20,11 +22,17 @@ ModelClass::~ModelClass()
 
 }
 
-bool ModelClass::Initialize(ID3D11Device* device)
+bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename)
 {
 	bool result;
 
 	result = InitializeBuffers(device);
+	if (!result)
+	{
+		return false;
+	}
+
+	result = LoadTexture(device, deviceContext, filename);
 	if (!result)
 	{
 		return false;
@@ -35,6 +43,7 @@ bool ModelClass::Initialize(ID3D11Device* device)
 
 void ModelClass::Shutdown()
 {
+	ReleaseTexture();
 	ShutdownBuffers();
 }
 
@@ -52,8 +61,6 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	D3D11_BUFFER_DESC indexBufferDesc;
 	D3D11_SUBRESOURCE_DATA vertexData;
 	D3D11_SUBRESOURCE_DATA indexData;
-
-	XMFLOAT4 Color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 
 	// 도형을 구성하는 점의 수
 	m_vertexCount = 4;
@@ -75,17 +82,17 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	// 도형 이루는 점의 위치, 색상 정보 입력
 	// 사각형 점 위치:	0  1
 	//					2  3
-	vertices[0].position = XMFLOAT3(-0.5f, 0.5f, 0.0f);
-	vertices[0].color = Color;
+	vertices[0].position = XMFLOAT3(-1.0f, 1.0f, 0.0f);
+	vertices[0].texture = XMFLOAT2(0.0f, 0.0f);
 
-	vertices[1].position = XMFLOAT3(0.5f, 0.5f, 0.0f);
-	vertices[1].color = Color;
+	vertices[1].position = XMFLOAT3(1.0f, 1.0f, 0.0f);
+	vertices[1].texture = XMFLOAT2(1.0f, 0.0f);
 
-	vertices[2].position = XMFLOAT3(-0.5f, -0.5f, 0.0f);
-	vertices[2].color = Color;
+	vertices[2].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);
+	vertices[2].texture = XMFLOAT2(0.0f, 1.0f);
 
-	vertices[3].position = XMFLOAT3(0.5f, -0.5f, 0.0f);
-	vertices[3].color = Color;
+	vertices[3].position = XMFLOAT3(1.0f, -1.0f, 0.0f);
+	vertices[3].texture = XMFLOAT2(1.0f, 1.0f);
 
 	indices[0] = 0;
 	indices[1] = 1;
@@ -186,4 +193,28 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	deviceContext->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
 	deviceContext->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+bool ModelClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename)
+{
+	bool result;
+
+	m_texture = new TextureClass;
+	result = m_texture->Initialize(device, deviceContext, filename);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void ModelClass::ReleaseTexture()
+{
+	if (m_texture)
+	{
+		m_texture->Shutdown();
+		delete m_texture;
+		m_texture = 0;
+	}
 }

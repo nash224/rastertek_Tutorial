@@ -13,6 +13,7 @@
 //---------------------------------------------------------------------------------------
 #include <d3d11.h>
 #include <directxmath.h>
+#include "textureclass.h"
 
 
 //---------------------------------------------------------------------------------------
@@ -38,15 +39,16 @@ public:
 	struct VertexType
 	{
 		DirectX::XMFLOAT3 position;
-		DirectX::XMFLOAT4 color;
+		DirectX::XMFLOAT2 texture;
 	};
 
 	ModelClass();
 	~ModelClass();
 
 	int GetIndexCount() const { return m_indexCount; }
+	ID3D11ShaderResourceView* GetTexture() const { return m_texture->GetTexture(); }
 
-	bool Initialize(ID3D11Device* device);
+	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename);
 	void Shutdown();
 	void Render(ID3D11DeviceContext* deviceContext);
 
@@ -79,12 +81,29 @@ private:
 	 */
 	void RenderBuffers(ID3D11DeviceContext* deviceContext);
 
+
+	/**
+	 * @brief		LoadTexture		텍스처 로딩 및 SRV 객체 생성
+	 *
+	 * @return		bool		SRV 객체 생성 유무
+	 */
+	bool LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename);
+
+	/**
+	 * @brief		ReleaseTexture		텍스처 자원 반환
+	 *
+	 * @return		void
+	 */
+	void ReleaseTexture();
+
 private:
 	int m_vertexCount;
 	int m_indexCount;
 
 	ID3D11Buffer* m_vertexBuffer;
 	ID3D11Buffer* m_indexBuffer;
+
+	TextureClass* m_texture;
 
 };
 

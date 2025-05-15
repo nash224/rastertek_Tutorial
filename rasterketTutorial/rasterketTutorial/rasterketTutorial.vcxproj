@@ -39,6 +39,10 @@
       </SubType>
     </ClInclude>
     <ClInclude Include="systemclass.h" />
+    <ClInclude Include="textureclass.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
     <ClInclude Include="textureshaderclass.h">
       <SubType>
       </SubType>
@@ -66,6 +70,10 @@
       </SubType>
     </ClCompile>
     <ClCompile Include="systemclass.cpp" />
+    <ClCompile Include="textureclass.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="textureshaderclass.cpp">
       <SubType>
       </SubType>

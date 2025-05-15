@@ -20,6 +20,7 @@ ApplicationClass::~ApplicationClass()
 bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 {
 	bool result;
+	char textureFilename[128];
 
 	m_Direct3D = new D3DClass;
 	result = m_Direct3D->Initialize(screenWidth, screenHieght, VSYNC_ENABLED, hwnd, 
@@ -33,10 +34,11 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	// Ä«¸Ş¶ó °´Ã¼ »ı¼º
 	m_Camera = new CameraClass;
 	m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
-	
+
 	// Model °´Ã¼ »ı¼º
 	m_Model = new ModelClass;
-	result = m_Model->Initialize(m_Direct3D->GetDevice());
+	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/stone01.tga");
+	result = m_Model->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), textureFilename);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize Model", L"Error", MB_OK);
@@ -51,7 +53,6 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 		MessageBox(hwnd, L"Could not initialize ColorShader", L"Error", MB_OK);
 		return false;
 	}
-
 
 	return true;
 }
@@ -119,7 +120,7 @@ bool ApplicationClass::Render()
 
 	// »ó¼ö¹öÆÛ, ¹öÅØ½º ½¦ÀÌ´õ, ÇÈ¼¿½¦ÀÌ´õ ¼¼ÆÃ, Draw Call
 	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(), 
-		worldMatrix, viewMatrix, projectionMatrix, nullptr);
+		worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture());
 	if (!result)
 	{
 		return false;
