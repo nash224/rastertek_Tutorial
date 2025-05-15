@@ -37,7 +37,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 
 	// Model °´Ã¼ »ý¼º
 	m_Model = new ModelClass;
-	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/stone01.tga");
+	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/1747017178.tga");
 	result = m_Model->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), textureFilename);
 	if (!result)
 	{

@@ -81,13 +81,15 @@ private:
 	 *
 	 * @return		bool		이미지 파일 로딩 유무
 	 */
-	bool LoadTarga32Bit(char* filename);
+	bool LoadTarga(char* filename);
+	void CopyTarga24Bit(unsigned char* targaImage, int ImageSize, int channelCount, unsigned char* buffer) const;
+	void CopyTarga32Bit(unsigned char* targaImage, int ImageSize, int channelCount, unsigned char* buffer) const;
 
 private:
 	unsigned char* m_targaData; // 텍스처 raw data에 대한 포인터
 	ID3D11Texture2D* m_texture;  // 텍스처 자원에 대한 인터페이스
 	ID3D11ShaderResourceView* m_textureView; // 쉐이더에서 텍스처를 조작할 수 있는 권한
-	int m_width, m_height;
+	int m_width, m_height, m_channelCount;
 
 };
 

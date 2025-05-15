@@ -12,6 +12,7 @@ TextureClass::TextureClass()
 	m_textureView = 0;
 	m_width = 0;
 	m_height = 0;
+	m_channelCount = 0;
 }
 
 TextureClass::~TextureClass()
@@ -28,7 +29,7 @@ bool TextureClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceC
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	unsigned int rowPitch;
 
-	result = LoadTarga32Bit(filename);
+	result = LoadTarga(filename);
 	if (!result)
 	{
 		goto JumpError;
@@ -125,11 +126,9 @@ void TextureClass::Shutdown()
 	}
 }
 
-// 32bit 형식인 tga 이미지에 대한 정보와 텍스처 로드
-// tga 이미지를 얻어올 경우, 이미지를 반전시켜서 로드한다.
-bool TextureClass::LoadTarga32Bit(char* filename)
+bool TextureClass::LoadTarga(char* filename)
 {
-	int error, bpp, imageSize, index, i, j, k;
+	int error, bpp, imageSize, textureSize;
 	FILE* filePtr = nullptr;
 	TargaHeader targaFileHeader;
 	unsigned int count;
@@ -157,14 +156,11 @@ bool TextureClass::LoadTarga32Bit(char* filename)
 	m_width = (int)targaFileHeader.width;
 	bpp = (int)targaFileHeader.bpp;
 
-	// 텍셀 크기
-	if (bpp != 32)
-	{
-		goto errorScope;
-	}
+	m_channelCount = bpp / 8;
 
 	// 상하 반전되어있는 이미지를 뒤집어 읽어온다.
-	imageSize = m_width * m_height * 4;
+	imageSize = m_width * m_height * m_channelCount;
+	textureSize = m_width * m_height * 4;
 
 	// 이미지 raw data 
 	targaImage = new unsigned char[imageSize];
@@ -175,29 +171,16 @@ bool TextureClass::LoadTarga32Bit(char* filename)
 		goto errorScope;
 	}
 
-	m_targaData = new unsigned char[imageSize];
+	m_targaData = new unsigned char[textureSize];
 
-	// 복사받을 텍셀 인덱스
-	index = 0;
-
-	// 복사할 텍스처의 텍셀 인덱스
-	// 텍스처 픽셀 데이터 마지막 줄부터 시작
-	k = (m_width * m_height * 4) - (m_width * 4);
-
-	for (j = 0; j < m_height; j++)
+	if (24 == bpp)
 	{
-		for (i = 0; i < m_width; i++)
-		{
-			m_targaData[index + 0] = targaImage[k + 2]; // Red
-			m_targaData[index + 1] = targaImage[k + 1]; // Green
-			m_targaData[index + 2] = targaImage[k + 0]; // Blue
-			m_targaData[index + 3] = targaImage[k + 3]; // Red
+		CopyTarga24Bit(targaImage, imageSize, m_channelCount, m_targaData);
 
-			k += 4;
-			index += 4;
-		}
-
-		k -= (m_width * 8);
+	}
+	else
+	{
+		CopyTarga32Bit(targaImage, imageSize, m_channelCount, m_targaData);
 	}
 
 	if (targaImage)
@@ -229,4 +212,65 @@ errorScope:
 	}
 
 	return false;
+}
+
+// 24bit 형식인 tga 이미지에 대한 정보와 텍스처 로드
+// tga 이미지를 얻어올 경우, 이미지를 반전시켜서 로드한다.
+void TextureClass::CopyTarga24Bit(unsigned char* targaImage, int ImageSize, int channelCount, unsigned char* buffer) const
+{
+	int index, i, j, k;
+
+	// 복사받을 텍셀 인덱스
+	index = 0;
+
+	// 복사할 텍스처의 텍셀 인덱스
+	// 텍스처 픽셀 데이터 마지막 줄부터 시작
+	k = (m_width * m_height * channelCount) - (m_width * channelCount);
+
+	for (j = 0; j < m_height; j++)
+	{
+		for (i = 0; i < m_width; i++)
+		{
+			buffer[index + 0] = targaImage[k + 2]; // Red
+			buffer[index + 1] = targaImage[k + 1]; // Green
+			buffer[index + 2] = targaImage[k + 0]; // Blue
+			buffer[index + 3] = 255; // alpha
+
+			k += channelCount;
+			index += 4;
+		}
+
+		k -= (m_width * (channelCount * 2));
+	}
+}
+
+
+// 32bit 형식인 tga 이미지에 대한 정보와 텍스처 로드
+// tga 이미지를 얻어올 경우, 이미지를 반전시켜서 로드한다.
+void TextureClass::CopyTarga32Bit(unsigned char* targaImage, int ImageSize, int channelCount, unsigned char* buffer) const
+{
+	int index, i, j, k;
+
+	// 복사받을 텍셀 인덱스
+	index = 0;
+
+	// 복사할 텍스처의 텍셀 인덱스
+	// 텍스처 픽셀 데이터 마지막 줄부터 시작
+	k = (m_width * m_height * channelCount) - (m_width * channelCount);
+
+	for (j = 0; j < m_height; j++)
+	{
+		for (i = 0; i < m_width; i++)
+		{
+			buffer[index + 0] = targaImage[k + 2]; // Red
+			buffer[index + 1] = targaImage[k + 1]; // Green
+			buffer[index + 2] = targaImage[k + 0]; // Blue
+			buffer[index + 3] = targaImage[k + 3]; // Alhpa
+
+			k += channelCount;
+			index += 4;
+		}
+
+		k -= (m_width * (channelCount * 2));
+	}
 }
