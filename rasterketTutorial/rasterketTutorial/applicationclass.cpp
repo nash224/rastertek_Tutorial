@@ -56,7 +56,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	}
 
 	m_Light = new LightClass;
-	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+	m_Light->SetDiffuseColor(0.85f, 0.12f, 0.32f, 1.0f);
 	m_Light->SetDirection(0.0f, 0.0f, 1.0f);
 
 	return true;
@@ -103,7 +103,7 @@ bool ApplicationClass::Frame()
 	static float rotation = 0.0f;
 	bool result;
 
-	rotation -= DirectX::XMConvertToRadians(DirectX::XM_2PI) * 0.1f;
+	rotation -= DirectX::XMConvertToRadians(DirectX::XM_2PI) * 0.3f;
 	if (rotation < 0.0f)
 	{
 		rotation += 360.0f;
@@ -133,7 +133,7 @@ bool ApplicationClass::Render(float rotation)
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 
-	worldMatrix = DirectX::XMMatrixRotationY(rotation);
+	worldMatrix = DirectX::XMMatrixRotationX(rotation);
 
 	// 기하 도형 입력 세팅
 	m_Model->Render(m_Direct3D->GetDeviceContext());
