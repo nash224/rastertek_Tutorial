@@ -9,7 +9,8 @@ ApplicationClass::ApplicationClass()
 	m_Direct3D = 0;
 	m_Camera = 0;
 	m_Model = 0;
-	m_TextureShader = 0;
+	m_LightShader = 0;
+	m_Light = 0;
 }
 
 ApplicationClass::~ApplicationClass()
@@ -46,13 +47,17 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	}
 
 	// ColorShader 생성
-	m_TextureShader = new TextureShaderClass;
-	result = m_TextureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	m_LightShader = new LightShaderClass;
+	result = m_LightShader->Initialize(m_Direct3D->GetDevice(), hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize ColorShader", L"Error", MB_OK);
 		return false;
 	}
+
+	m_Light = new LightClass;
+	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+	m_Light->SetDirection(0.0f, 0.0f, 1.0f);
 
 	return true;
 }
@@ -79,19 +84,32 @@ void ApplicationClass::Shutdown()
 		m_Model = 0;
 	}
 
-	if (m_TextureShader)
+	if (m_LightShader)
 	{
-		m_TextureShader->Shutdown();
-		delete m_TextureShader;
-		m_TextureShader = 0;
+		m_LightShader->Shutdown();
+		delete m_LightShader;
+		m_LightShader = 0;
+	}
+
+	if (m_Light)
+	{
+		delete m_Light;
+		m_Light = 0;
 	}
 }
 
 bool ApplicationClass::Frame()
 {
+	static float rotation = 0.0f;
 	bool result;
 
-	result = Render();
+	rotation -= DirectX::XMConvertToRadians(DirectX::XM_2PI) * 0.1f;
+	if (rotation < 0.0f)
+	{
+		rotation += 360.0f;
+	}
+
+	result = Render(rotation);
 	if (!result)
 	{
 		return false;
@@ -100,7 +118,7 @@ bool ApplicationClass::Frame()
 	return true;
 }
 
-bool ApplicationClass::Render()
+bool ApplicationClass::Render(float rotation)
 {
 	DirectX::XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 	bool result;
@@ -115,12 +133,15 @@ bool ApplicationClass::Render()
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 
+	worldMatrix = DirectX::XMMatrixRotationY(rotation);
+
 	// 기하 도형 입력 세팅
 	m_Model->Render(m_Direct3D->GetDeviceContext());
 
 	// 상수버퍼, 버텍스 쉐이더, 픽셀쉐이더 세팅, Draw Call
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(), 
-		worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture());
+	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(), 
+		m_Light->GetDirection(), m_Light->GetDiffuseColor());
 	if (!result)
 	{
 		return false;

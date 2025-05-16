@@ -1,38 +1,110 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="리소스 파일">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Engine">
       <UniqueIdentifier>{fee397b1-9418-474a-9023-faff4ac276a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Grapihc">
+      <UniqueIdentifier>{4fc9740a-ff6d-4c1b-b9c2-1255975b69be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grapihc\Shader">
+      <UniqueIdentifier>{904ab363-c219-4d34-917a-33f89282272f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{bfdafb13-c14f-4be8-8d72-cddb8af4cdbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{9bea8b99-0521-441b-94ab-17210470f543}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{1f6bcde8-e94f-40fa-8cc2-9145d324a866}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Camera">
+      <UniqueIdentifier>{c7b64c90-4bbb-4ba2-a6b3-9b88c43275e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Shape">
+      <UniqueIdentifier>{8e593da3-5d22-4e22-aebf-ce7beef41cb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grapihc\Res">
+      <UniqueIdentifier>{39e6c266-bdd5-4bc1-9b64-3e6b7d3ed498}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="d3dclass.h" />
-    <ClInclude Include="inputclass.h" />
-    <ClInclude Include="systemclass.h" />
-    <ClInclude Include="applicationclass.h" />
-    <ClInclude Include="colorshaderclass.h" />
-    <ClInclude Include="modelclass.h" />
-    <ClInclude Include="cameraclass.h" />
-    <ClInclude Include="ShapeClass.h" />
-    <ClInclude Include="textureshaderclass.h" />
-    <ClInclude Include="textureclass.h" />
+    <ClInclude Include="colorshaderclass.h">
+      <Filter>Grapihc\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="lightshaderclass.h">
+      <Filter>Grapihc\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="textureshaderclass.h">
+      <Filter>Grapihc\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="systemclass.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="applicationclass.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dclass.h">
+      <Filter>Grapihc</Filter>
+    </ClInclude>
+    <ClInclude Include="modelclass.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="inputclass.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="cameraclass.h">
+      <Filter>Object\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeClass.h">
+      <Filter>Object\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="textureclass.h">
+      <Filter>Grapihc\Res</Filter>
+    </ClInclude>
+    <ClInclude Include="lightclass.h">
+      <Filter>Grapihc\Res</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="inputclass.cpp" />
+    <ClCompile Include="colorshaderclass.cpp">
+      <Filter>Grapihc\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="lightshaderclass.cpp">
+      <Filter>Grapihc\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="textureshaderclass.cpp">
+      <Filter>Grapihc\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="systemclass.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="applicationclass.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="d3dclass.cpp">
+      <Filter>Grapihc</Filter>
+    </ClCompile>
+    <ClCompile Include="modelclass.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="inputclass.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="cameraclass.cpp">
+      <Filter>Object\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapeClass.cpp">
+      <Filter>Object\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="textureclass.cpp">
+      <Filter>Grapihc\Res</Filter>
+    </ClCompile>
+    <ClCompile Include="lightclass.cpp">
+      <Filter>Grapihc\Res</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="systemclass.cpp" />
-    <ClCompile Include="applicationclass.cpp" />
-    <ClCompile Include="d3dclass.cpp" />
-    <ClCompile Include="colorshaderclass.cpp" />
-    <ClCompile Include="modelclass.cpp" />
-    <ClCompile Include="cameraclass.cpp" />
-    <ClCompile Include="ShapeClass.cpp" />
-    <ClCompile Include="textureshaderclass.cpp" />
-    <ClCompile Include="textureclass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="colorVS.hlsl">
@@ -45,6 +117,12 @@
       <Filter>Engine</Filter>
     </FxCompile>
     <FxCompile Include="Engine\texturePS.hlsl">
+      <Filter>Engine</Filter>
+    </FxCompile>
+    <FxCompile Include="Engine\lightPS.hlsl">
+      <Filter>Engine</Filter>
+    </FxCompile>
+    <FxCompile Include="Engine\lightVS.hlsl">
       <Filter>Engine</Filter>
     </FxCompile>
   </ItemGroup>

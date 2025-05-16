@@ -40,6 +40,7 @@ public:
 	{
 		DirectX::XMFLOAT3 position;
 		DirectX::XMFLOAT2 texture;
+		DirectX::XMFLOAT3 normal;
 	};
 
 	ModelClass();
@@ -80,7 +81,6 @@ private:
 	 * @return		void
 	 */
 	void RenderBuffers(ID3D11DeviceContext* deviceContext);
-
 
 	/**
 	 * @brief		LoadTexture		텍스처 로딩 및 SRV 객체 생성
