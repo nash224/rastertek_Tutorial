@@ -42,6 +42,7 @@ public:
 
 	struct LightBufferType
 	{
+		DirectX::XMFLOAT4 ambientColor; // 환경광 색상
 		DirectX::XMFLOAT4 diffuseColor; // diffuse 색상
 		DirectX::XMFLOAT3 lightDirection; // 빛의 방향
 		// hlsl는 16바이트 단위로 데이터를 압축한다.
@@ -83,13 +84,14 @@ public:
 	 * @param		viewMarix			뷰 행렬
 	 * @param		projectionMarix		투영 행렬
 	 * @param		lightDirection		직사광 방향
+	 * @param		ambientColor		환경광 색상
 	 * @param		diffuseColor		빛의 색상
 	 *
 	 * @return		bool				상수버퍼 세팅 유무
 	 */
 	bool Render(ID3D11DeviceContext* deviceContext, int indexCount,
 		DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix,
-		ID3D11ShaderResourceView* texture, DirectX::XMFLOAT3 lightDirection, DirectX::XMFLOAT4 diffuseColor);
+		ID3D11ShaderResourceView* texture, DirectX::XMFLOAT3 lightDirection, DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor);
 
 private:
 
@@ -144,7 +146,8 @@ private:
 	 */
 	bool SetShaderParamters(ID3D11DeviceContext* deviceContext,
 		DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix,
-		ID3D11ShaderResourceView* texture, DirectX::XMFLOAT3 lightDirection, DirectX::XMFLOAT4 diffuseColor);
+		ID3D11ShaderResourceView* texture, 
+		DirectX::XMFLOAT3 lightDirection, DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor);
 
 
 	/**

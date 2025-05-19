@@ -14,8 +14,12 @@
 
 // 참고 사이트: https://www.rastertek.com/
 
+// 이번 예제는 기하 도형의 모든 평면에 환경광을 적용해볼 것이다.
+//
+
 // 조작법: 
 //		- escape: exit application
+
 
 #include "systemclass.h"
 #include <crtdbg.h>

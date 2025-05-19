@@ -13,9 +13,10 @@ SamplerState SampleType : register(s0);
 
 cbuffer LightBuffer
 {
-	float4 diffuseColor; // 빛의 색상
-	float3 lightDirection; // 빛의 방향
-	float padding; // 성능 최적화를 위한 패딩
+	float4 ambientColor;	// 환경광 색상
+	float4 diffuseColor;	// 빛의 색상
+	float3 lightDirection;	// 빛의 방향
+	float padding;			// 성능 최적화를 위한 패딩
 };
 
 struct PixelInputType
@@ -36,16 +37,28 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
 	// 도형 픽셀에 그릴 색상이 결정되면 그 픽셀을 그릴 것이다.
 	textureColor = shaderTexture.Sample(SampleType, input.tex);
 	
+	// 환경광을 묘사하기 위해, 도형의 모든 평면 픽셀에 환경광 색상 최소치를 할당한다.
+	color = ambientColor;
+	
 	// 직사 방향을 반전시킨다.
-	lightDir = -lightDirection;
+	lightDir = -saturate(lightDirection);
 	
 	// 빛의 방향과 도형 평면의 노말을 내적해서 빛의 세기를 구한다.
 	lightIntensity = saturate(dot(lightDir, input.normal));
 	
-	// 빛의 확산 색상과 빛의 세기를 곱해 직사광의 색상을 구한다.
-	color = saturate(diffuseColor * lightIntensity);
+	// diffuse color에 빛의 세기를 적용시켜, 직사광의 색상을 구한다.
+	// 
+	// 빛의 세기가 음수일 경우, 환경광이 제대로 표현되지 않을 수 있다.
+	// 따라서 빛의 세기가 0을 넘길 경우에만 직사광을 적용한다.
+	if (lightIntensity > 0.0f)
+	{
+		color += diffuseColor * lightIntensity;
+	}
 	
-	// 텍스처에 직사광을 입힌다.
+	// 환경광으로 인해 빛의 색상이 1을 넘기지 않도록 clamp 처리
+	color = saturate(color);
+	
+	// 텍스처에 빛을 입힌다.
 	color *= textureColor;
 	
 	return color;

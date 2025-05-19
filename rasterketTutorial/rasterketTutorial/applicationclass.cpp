@@ -49,7 +49,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 
 	// 카메라 객체 생성
 	m_Camera = new CameraClass;
-	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+	m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
 
 	// Model 객체 생성
 	m_Model = new ModelClass;
@@ -70,8 +70,9 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	}
 
 	m_Light = new LightClass;
-	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	m_Light->SetDirection(0.0f, 0.0f, 1.0f);
+	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f); // 확산광 세팅
+	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);    // diffuse 색상 세팅
+	m_Light->SetDirection(1.0f, 0.0f, 0.0f);			 // 직사광 방향 세팅
 
 	return true;
 }
@@ -148,48 +149,29 @@ bool ApplicationClass::Render(float rotation)
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 
+	DirectX::XMVECTOR Quaternion = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, rotation, 0.0f);
+
+	// 도형을 조작하려면 도형의 월드 SRT행렬을 구해야 한다.
+	// 월드 SRT행렬은 scale, rotation, transition 
+	// 그리고 세계 기준이 되는 월드 행렬(대부분 단위 행렬)을 곱하여 구할 수 있다.
+
+	scaleMatrix = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	rotateMatrix = DirectX::XMMatrixRotationQuaternion(Quaternion);
+	translateMatrix = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+
+	srMatrix = DirectX::XMMatrixMultiply(scaleMatrix, rotateMatrix);
+	worldMatrix = DirectX::XMMatrixMultiply(srMatrix, translateMatrix);
+
+	// 기하 도형 입력 세팅
+	m_Model->Render(m_Direct3D->GetDeviceContext());
+
+	// 상수버퍼, 버텍스 쉐이더, 픽셀쉐이더 세팅, Draw Call
+	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(),
+		m_Light->GetDirection(), m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+	if (!result)
 	{
-		// 도형을 조작하려면 도형의 월드 SRT행렬을 구해야 한다.
-		// 월드 SRT행렬은 scale, rotation, transition 
-		// 그리고 세계 기준이 되는 월드 행렬(대부분 단위 행렬)을 곱하여 구할 수 있다.
-		rotateMatrix = DirectX::XMMatrixRotationY(rotation);
-		translateMatrix = DirectX::XMMatrixTranslation(-2.0f, 0.0f, 0.0f);
-
-		worldMatrix = DirectX::XMMatrixMultiply(rotateMatrix, translateMatrix);
-
-		// 기하 도형 입력 세팅
-		m_Model->Render(m_Direct3D->GetDeviceContext());
-
-		// 상수버퍼, 버텍스 쉐이더, 픽셀쉐이더 세팅, Draw Call
-		result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-			worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(),
-			m_Light->GetDirection(), m_Light->GetDiffuseColor());
-		if (!result)
-		{
-			return false;
-		}
-	}
-
-	{
-		// 또 다른 도형을 SRT를 적용시켜 렌더링을 수행한다..
-		scaleMatrix = DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f);
-		rotateMatrix = DirectX::XMMatrixRotationY(rotation);
-		translateMatrix = DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f);
-
-		srMatrix = DirectX::XMMatrixMultiply(scaleMatrix, rotateMatrix);
-		worldMatrix = DirectX::XMMatrixMultiply(srMatrix, translateMatrix);
-
-		// 기하 도형 입력 세팅
-		m_Model->Render(m_Direct3D->GetDeviceContext());
-
-		// 상수버퍼, 버텍스 쉐이더, 픽셀쉐이더 세팅, Draw Call
-		result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-			worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(),
-			m_Light->GetDirection(), m_Light->GetDiffuseColor());
-		if (!result)
-		{
-			return false;
-		}
+		return false;
 	}
 
 	// 화면에 출력

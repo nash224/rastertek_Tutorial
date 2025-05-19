@@ -6,6 +6,17 @@
 
 using namespace DirectX;
 
+// 환경광
+// 
+// 태양광이 실내로 들어오더라도 빛은 산란되서 들어온다.
+// 이렇게 빛이 산란되어 들어오는 효과를 환경광이라고 한다.
+// 
+// 환경광(ambient light)의 구현은 도형의 모든 평면에 빛의 색상 최소치를 더하면 된다.
+// 이런 효과로 도형의 모든 각도에서 퍼지는 빛의 산란을 구현할 수 있다.
+// 
+// 환경광은 사용자가 조절 가능하다.
+//
+
 LightShaderClass::LightShaderClass()
 {
 	m_vertexShader = 0;
@@ -57,12 +68,14 @@ void LightShaderClass::Shutdown()
 
 bool LightShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
 	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture, XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor)
+	ID3D11ShaderResourceView* texture, XMFLOAT3 lightDirection, XMFLOAT4 ambientColor, XMFLOAT4 diffuseColor)
 {
 	bool result;
 
 	// 상수버퍼 세팅
-	result = SetShaderParamters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, texture, lightDirection, diffuseColor);
+	result = SetShaderParamters(deviceContext, 
+		worldMatrix, viewMatrix, projectionMatrix, 
+		texture, lightDirection, ambientColor, diffuseColor);
 	if (!result)
 	{
 		return false;
@@ -320,7 +333,7 @@ void LightShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND h
 // 픽셀 쉐이더의 전역 텍스처 슬롯에 사용할 텍스처 세팅
 bool LightShaderClass::SetShaderParamters(ID3D11DeviceContext* deviceContext,
 	DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture, XMFLOAT3 lightDirection, XMFLOAT4 diffuseColor)
+	ID3D11ShaderResourceView* texture, XMFLOAT3 lightDirection, XMFLOAT4 ambientColor, XMFLOAT4 diffuseColor)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -382,6 +395,7 @@ bool LightShaderClass::SetShaderParamters(ID3D11DeviceContext* deviceContext,
 
 	// 여기에 보낼 행렬 데이터를 적제한다.
 	dataPtr2 = (LightBufferType*)mappedResource.pData;
+	dataPtr2->ambientColor = ambientColor;
 	dataPtr2->diffuseColor = diffuseColor;
 	dataPtr2->lightDirection = lightDirection;
 	dataPtr2->padding = 0.0f;
