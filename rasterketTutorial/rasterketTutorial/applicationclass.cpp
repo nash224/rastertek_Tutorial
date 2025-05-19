@@ -21,7 +21,11 @@ ApplicationClass::~ApplicationClass()
 bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 {
 	bool result;
+	char modelFilename[128];
 	char textureFilename[128];
+
+	strcpy_s(modelFilename, "../rasterketTutorial/Engine/data/cube.txt");
+	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/stone01.tga");
 
 	m_Direct3D = new D3DClass;
 	result = m_Direct3D->Initialize(screenWidth, screenHieght, VSYNC_ENABLED, hwnd, 
@@ -38,8 +42,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 
 	// Model 객체 생성
 	m_Model = new ModelClass;
-	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/stone01.tga");
-	result = m_Model->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), textureFilename);
+	result = m_Model->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), modelFilename, textureFilename);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize Model", L"Error", MB_OK);
@@ -56,7 +59,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	}
 
 	m_Light = new LightClass;
-	m_Light->SetDiffuseColor(0.85f, 0.12f, 0.32f, 1.0f);
+	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	m_Light->SetDirection(0.0f, 0.0f, 1.0f);
 
 	return true;
@@ -103,7 +106,7 @@ bool ApplicationClass::Frame()
 	static float rotation = 0.0f;
 	bool result;
 
-	rotation -= DirectX::XMConvertToRadians(DirectX::XM_2PI) * 0.3f;
+	rotation -= DirectX::XMConvertToRadians(DirectX::XM_2PI) * 0.2f;
 	if (rotation < 0.0f)
 	{
 		rotation += 360.0f;
@@ -133,7 +136,7 @@ bool ApplicationClass::Render(float rotation)
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 
-	worldMatrix = DirectX::XMMatrixRotationX(rotation);
+	worldMatrix = DirectX::XMMatrixRotationY(rotation);
 
 	// 기하 도형 입력 세팅
 	m_Model->Render(m_Direct3D->GetDeviceContext());

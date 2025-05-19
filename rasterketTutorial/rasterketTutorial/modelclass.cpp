@@ -15,6 +15,7 @@ ModelClass::ModelClass()
 	m_indexBuffer = 0;
 
 	m_texture = 0;
+	m_model = 0;
 }
 
 ModelClass::~ModelClass()
@@ -22,9 +23,16 @@ ModelClass::~ModelClass()
 
 }
 
-bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename)
+bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* modelFilename, char* textureFilename)
 {
 	bool result;
+
+	// 기하 도형의 정점 정보를 불러온다.
+	result = LoadModel(modelFilename);
+	if (!result)
+	{
+		return false;
+	}
 
 	result = InitializeBuffers(device);
 	if (!result)
@@ -32,7 +40,7 @@ bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCon
 		return false;
 	}
 
-	result = LoadTexture(device, deviceContext, filename);
+	result = LoadTexture(device, deviceContext, textureFilename);
 	if (!result)
 	{
 		return false;
@@ -45,6 +53,7 @@ void ModelClass::Shutdown()
 {
 	ReleaseTexture();
 	ShutdownBuffers();
+	ReleaseModel();
 }
 
 void ModelClass::Render(ID3D11DeviceContext* deviceContext)
@@ -61,11 +70,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	D3D11_BUFFER_DESC indexBufferDesc;
 	D3D11_SUBRESOURCE_DATA vertexData;
 	D3D11_SUBRESOURCE_DATA indexData;
-
-	// 도형을 구성하는 점의 수
-	m_vertexCount = 4;
-	// 도형 인덱스 수
-	m_indexCount = 6;
+	int i;
 
 	vertices = new VertexType[m_vertexCount];
 	if (!vertices)
@@ -79,31 +84,16 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 		goto failed;
 	}
 
-	// 도형 이루는 점의 위치, 색상 정보 입력
-	// 사각형 점 위치:	0  1
-	//					2  3
-	vertices[0].position = XMFLOAT3(-1.0f, 1.0f, 0.0f);
-	vertices[0].texture = XMFLOAT2(0.0f, 0.0f);
-	vertices[0].normal = XMFLOAT3(0.0f, 0.0f, -1.0f);
+	// 기하 도형의 position, texture uv, normal 정보를 VertexType 배열에 담고,
+	// 인덱스 배열은 도형의 순서대로 제공한다. 물론 차후에 수정할 수도 있다.
+	for (i = 0; i < m_vertexCount; i++)
+	{
+		vertices[i].position = XMFLOAT3(m_model[i].x, m_model[i].y, m_model[i].z);
+		vertices[i].texture = XMFLOAT2(m_model[i].tu, m_model[i].tv);
+		vertices[i].normal = XMFLOAT3(m_model[i].nx, m_model[i].ny, m_model[i].nz);
 
-	vertices[1].position = XMFLOAT3(1.0f, 1.0f, 0.0f);
-	vertices[1].texture = XMFLOAT2(1.0f, 0.0f);
-	vertices[1].normal = XMFLOAT3(0.0f, 0.0f, -1.0f);
-
-	vertices[2].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);
-	vertices[2].texture = XMFLOAT2(0.0f, 1.0f);
-	vertices[2].normal = XMFLOAT3(0.0f, 0.0f, -1.0f);
-
-	vertices[3].position = XMFLOAT3(1.0f, -1.0f, 0.0f);
-	vertices[3].texture = XMFLOAT2(1.0f, 1.0f);
-	vertices[3].normal = XMFLOAT3(0.0f, 0.0f, -1.0f);
-
-	indices[0] = 0;
-	indices[1] = 1;
-	indices[2] = 3;
-	indices[3] = 0;
-	indices[4] = 3;
-	indices[5] = 2;
+		indices[i] = i;
+	}
 
 	vertexBufferDesc.Usage               = D3D11_USAGE_DEFAULT;                // gpu에서 읽기 및 쓰기 
 	vertexBufferDesc.ByteWidth           = sizeof(VertexType) * m_vertexCount; // 도형을 이루는 점의 전체 크기
@@ -220,5 +210,62 @@ void ModelClass::ReleaseTexture()
 		m_texture->Shutdown();
 		delete m_texture;
 		m_texture = 0;
+	}
+}
+
+// 텍스처 기반의 기하 도형을 구성하는 정점 데이터를 로드한다.
+// 정점의 수는   첫 줄에 기술 
+// 정점 데이터는 각 줄마다 기술되어 있으며, 
+// 한 줄, 즉 하나의 정점은 순서대로 position, texture uv, normal로 구성된다.
+bool ModelClass::LoadModel(char* filename)
+{
+	std::ifstream fin;
+	char input;
+	int i;
+
+	fin.open(filename);
+	if (fin.fail())
+	{
+		return false;
+	}
+
+	fin.get(input);
+	while (input != ':')
+	{
+		fin.get(input);
+	}
+
+	fin >> m_vertexCount;
+
+	m_indexCount = m_vertexCount;
+
+	m_model = new ModelType[m_vertexCount];
+
+	fin.get(input);
+	while (input != ':')
+	{
+		fin.get(input);
+	}
+	fin.get(input);
+	fin.get(input);
+
+	for (i = 0; i < m_vertexCount; i++)
+	{
+		fin >> m_model[i].x >> m_model[i].y >> m_model[i].z;
+		fin >> m_model[i].tu >> m_model[i].tv;
+		fin >> m_model[i].nx >>  m_model[i].ny >> m_model[i].nz;
+	}
+
+	fin.close();
+
+	return true;
+}
+
+void ModelClass::ReleaseModel()
+{
+	if (m_model)
+	{
+		delete[] m_model;
+		m_model = 0;
 	}
 }

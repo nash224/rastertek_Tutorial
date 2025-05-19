@@ -13,6 +13,7 @@
 //---------------------------------------------------------------------------------------
 #include <d3d11.h>
 #include <directxmath.h>
+#include <fstream>
 #include "textureclass.h"
 
 
@@ -32,6 +33,7 @@
 기능:
 	- 버텍스 쉐이더 및 픽셀 쉐이더 생성 및 관리
 	- 렌더링 전에 기하 도형을 그리는 방법과 입력 조합기 세팅
+	- 입출력 시스템을 통해 기하 도형의 정점 데이터 로드
 */
 class ModelClass
 {
@@ -43,13 +45,21 @@ public:
 		DirectX::XMFLOAT3 normal;
 	};
 
+	// 기하 도형의 정점 데이터를 구성하는 포맷 형식
+	struct ModelType
+	{
+		float x, y, z; // vertex
+		float tu, tv; // texture uv
+		float nx, ny, nz; // normal 
+	};
+
 	ModelClass();
 	~ModelClass();
 
 	int GetIndexCount() const { return m_indexCount; }
 	ID3D11ShaderResourceView* GetTexture() const { return m_texture->GetTexture(); }
 
-	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename);
+	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* modelFilename, char* textureFilename);
 	void Shutdown();
 	void Render(ID3D11DeviceContext* deviceContext);
 
@@ -96,6 +106,25 @@ private:
 	 */
 	void ReleaseTexture();
 
+
+	/**
+	 * @brief		LoadModel		텍스트 기반의 파일에서 기하 도형의 정점 데이터 로드
+	 *
+	 * @param		filename		정점 데이터를 포함한 파일 이름
+	 *
+	 * @return		bool			로드 유무
+	 * 
+	 * @warning		InitalizeBuffer를 호출하기 전에 호출되어야 함
+	 */
+	bool LoadModel(char* filename);
+
+	/**
+	 * @brief		ReleaseModel		사용을 끝낸 기하 도형 객체 정리
+	 *
+	 * @return		void
+	 */
+	void ReleaseModel();
+
 private:
 	int m_vertexCount;
 	int m_indexCount;
@@ -104,7 +133,7 @@ private:
 	ID3D11Buffer* m_indexBuffer;
 
 	TextureClass* m_texture;
-
+	ModelType* m_model;
 };
 
 

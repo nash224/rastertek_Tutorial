@@ -10,9 +10,12 @@
 // 추신: 원작자의 코드를 보면 생성에 실패 시, 
 // 지역변수의 자원이 해제되지 않는 문제가 있습니다.
 // 원작자의 코드 스타일을 최대한 비슷하게 유지하도록 goto 문을 사용했음을 알려드립니다.
-// 예시) modelclass::initializeBuffers 
+// 예시) ModelClass::InitializeBuffers 
 
 // 참고 사이트: https://www.rastertek.com/
+
+// 조작법: 
+//		- escape: exit application
 
 #include "systemclass.h"
 #include <crtdbg.h>
