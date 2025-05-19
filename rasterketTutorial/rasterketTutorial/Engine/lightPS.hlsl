@@ -59,7 +59,7 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
 	color = saturate(color);
 	
 	// 텍스처에 빛을 입힌다.
-	color *= textureColor;
+	// color *= textureColor;
 	
 	return color;
 }

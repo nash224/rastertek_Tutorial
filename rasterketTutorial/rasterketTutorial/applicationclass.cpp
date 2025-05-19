@@ -70,7 +70,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	}
 
 	m_Light = new LightClass;
-	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f); // 확산광 세팅
+	m_Light->SetAmbientColor(0.1f, 0.1f, 0.1f, 1.0f); // 확산광 세팅
 	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);    // diffuse 색상 세팅
 	m_Light->SetDirection(1.0f, 0.0f, 0.0f);			 // 직사광 방향 세팅
 
