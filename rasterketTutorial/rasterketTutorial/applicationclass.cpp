@@ -15,6 +15,37 @@
 // 보통 cpu 단계에서 스케일, 회전, 이동 행렬을 곱해 transform을 gpu로 넘겨주게 됨
 // 
 
+// 사원수의 도입
+// 
+// 3D 공간에서 물체를 회전하려면, 물체가 위치한 기준이 되는 축을 회전하게 됨
+// 
+// x축을 회전하고 싶다면 x축을 돌리면 되고, 다른 축 또한 비슷한 과정을 거치게 됨
+// 
+// 이러한 축 회전을 적용하려면, 물체가 위치한 월드 행렬에 회전 행렬을 곱하게 됨
+// 즉, x축 회전행렬, y축 회전행렬, z축 회전행렬을 순서대로 곱해서 최종 회전 행렬을 구하게 됨
+// 
+// 하지만 그래픽 상에서 애니메이션을 적용하기 위해 회전을 보간하는 일이 생각보다 잦음
+// 
+// 그래서 회전 행렬로부터 다시 각 축의 회전 각으로 변환해야 함
+// 변환하는 과정은 손실이 심할뿐더러 이걸 매 프레임마다 하기엔 연산 비용이 미친듯이 높음
+// 
+// 이러한 세 축에 대한 회전을 오일러 각도라고 함
+// 
+// 오일러 각도의 문제점은 위에서 언급한 문제를 가지고 있고, 짐벌락 문제가 발생하게 됨
+// 
+// 
+// 위 문제는 사원수로 해결 가능한데, 사원수는 직관적이지 않지만, 
+// 회전 행렬로부터 각 축의 회전각을 저비용으로 얻을 수 있고, 짐벌락 문제도 해결할 수 있음
+// 
+// 축의 회전은 3차원인데, 차원 하나를 더 써서 3차원을 여러개 포함하는 4차원의 형태로 회전을 보관하게 됨
+// 그래서 사원수는 회전축과 회전각도를 포함하고 있고,
+// 이것을 실수 4개를 벡터로 표현할 수 있음
+// 
+// 최종적으로 축에 대한 연산은 사원수로 변환하여 구하고
+// 사원수에서 물체를 회전할 수 있는 회전행렬로 변환해서 사용하게 됨
+// 
+
+
 ApplicationClass::ApplicationClass()
 {
 	m_Direct3D = 0;
@@ -152,9 +183,14 @@ bool ApplicationClass::Render(float rotation)
 		// 도형을 조작하려면 도형의 월드 SRT행렬을 구해야 한다.
 		// 월드 SRT행렬은 scale, rotation, transition 
 		// 그리고 세계 기준이 되는 월드 행렬(대부분 단위 행렬)을 곱하여 구할 수 있다.
-		rotateMatrix = DirectX::XMMatrixRotationY(rotation);
+
+		// 쿼터니온은 회전축과 회전각도를 포함하고 있다.
+		// 쿼터니온으로 회전행렬을 구할 수 있다.
+		DirectX::XMVECTOR Quaternion = DirectX::XMQuaternionRotationRollPitchYaw(rotation, rotation, rotation);
+		rotateMatrix = DirectX::XMMatrixRotationQuaternion(Quaternion);
 		translateMatrix = DirectX::XMMatrixTranslation(-2.0f, 0.0f, 0.0f);
 
+		// rotation, translate을 바꿀 경우, 도형의 기준점으로부터 공전이 일어난다.
 		worldMatrix = DirectX::XMMatrixMultiply(rotateMatrix, translateMatrix);
 
 		// 기하 도형 입력 세팅
@@ -172,12 +208,13 @@ bool ApplicationClass::Render(float rotation)
 
 	{
 		// 또 다른 도형을 SRT를 적용시켜 렌더링을 수행한다..
-		scaleMatrix = DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f);
+		scaleMatrix = DirectX::XMMatrixScaling(1.0f, 0.5f, 0.5f);
 		rotateMatrix = DirectX::XMMatrixRotationY(rotation);
 		translateMatrix = DirectX::XMMatrixTranslation(2.0f, 0.0f, 0.0f);
 
 		srMatrix = DirectX::XMMatrixMultiply(scaleMatrix, rotateMatrix);
 		worldMatrix = DirectX::XMMatrixMultiply(srMatrix, translateMatrix);
+		worldMatrix = DirectX::XMMatrixMultiply(worldMatrix, rotateMatrix);
 
 		// 기하 도형 입력 세팅
 		m_Model->Render(m_Direct3D->GetDeviceContext());
