@@ -73,7 +73,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);    // 환경광 세팅
 	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);    // 난반사광 색상 세팅
 	m_Light->SetDirection(1.0f, 0.0f, 1.0f);			 // 직사광 방향 세팅
-	m_Light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);	 // 정반사광 방향 세팅
+	m_Light->SetSpecularColor(0.0f, 1.0f, 0.0f, 1.0f);	 // 정반사광 방향 세팅
 	m_Light->SetSpecularColor(32.0f);					 // 정반사광 세기 세팅
 
 	return true;
@@ -125,6 +125,12 @@ bool ApplicationClass::Frame()
 	{
 		rotation += 360.0f;
 	}
+
+	DirectX::XMVECTOR Front = DirectX::XMVECTOR{ 0.0f, 0.0f, 1.0f, 0.0f };
+	DirectX::XMVECTOR Vec = DirectX::XMVector3TransformNormal(Front, DirectX::XMMatrixRotationY(rotation));
+	DirectX::XMFLOAT3 Dir;
+	DirectX::XMStoreFloat3(&Dir, Vec);
+	m_Light->SetDirection(Dir);
 
 	result = Render(rotation);
 	if (!result)

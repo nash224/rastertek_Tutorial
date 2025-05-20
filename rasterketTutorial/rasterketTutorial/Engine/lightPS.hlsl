@@ -56,7 +56,7 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
 	specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	
 	// 직사 방향 반전
-	lightDir = -saturate(lightDirection);
+	lightDir = -normalize(lightDirection);
 	
 	// 빛의 세기 = 내적(빛의 방향, 법석 벡터)
 	lightIntensity = saturate(dot(lightDir, input.normal));
@@ -69,13 +69,13 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
 	{
 		color += diffuseColor * lightIntensity;
 		
-		// 환경광으로 인해 빛의 색상이 1을 넘기지 않도록 clamp 처리ㅁ
+		// 환경광으로 인해 빛의 색상이 1을 넘기지 않도록 clamp 처리
 		color = saturate(color);
 
 		// 빛이 반사되는 방향 정의
 		reflection = normalize((2.0f * lightIntensity * input.normal) - lightDir);
 		
-		// 관찰자가 바라보는 방향과 빛이 반사되는 방향이 일치할 수록, 정반사광이 강조하는 범위가 넓어진다.
+		// 관찰자가 바라보는 방향과 빛이 반사되는 방향이 일치할 수록, 정반사광이 강조하는 범위는 좁아진다..
 		specular = pow(saturate(dot(reflection, input.viewDirection)), specularPower);
 	}
 	
@@ -83,7 +83,7 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
 	color *= textureColor;
 	
 	// 뚜렷한 강조를 위해 텍스처 이후에 정반사광을 더 해준다.
-	color = saturate(color + specular);
+	color = saturate(color + specular * specularColor);
 	
 	return color;
 }

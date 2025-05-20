@@ -50,6 +50,7 @@ public:
 
 	DirectX::XMFLOAT4 GetDiffuseColor() const { return m_diffuseColor; }
 
+	void SetDirection(DirectX::XMFLOAT3 _direction) { m_direction = _direction; }
 	void SetDirection(float x, float y, float z)
 	{
 		m_direction = DirectX::XMFLOAT3{ x,y,z };
