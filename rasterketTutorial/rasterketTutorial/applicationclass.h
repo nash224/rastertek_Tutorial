@@ -87,6 +87,7 @@ private:
 	ModelClass* m_Model;
 	LightShaderClass* m_LightShader;
 	LightClass* m_Light;
+	int m_numLights;
 
 };
 

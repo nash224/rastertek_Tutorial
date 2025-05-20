@@ -71,6 +71,12 @@ public:
 
 	float GetSpecularPower() const { return m_specularPower; }
 
+	void SetPosition(float x, float y, float z)
+	{
+		m_position = DirectX::XMFLOAT4{ x, y, z, 1.0f };
+	}
+
+	DirectX::XMFLOAT4 GetPosition() const { return m_position; }
 
 private:
 	DirectX::XMFLOAT4 m_ambientColor;
@@ -78,6 +84,7 @@ private:
 	DirectX::XMFLOAT3 m_direction;
 	DirectX::XMFLOAT4 m_specularColor;
 	float m_specularPower;
+	DirectX::XMFLOAT4 m_position;
 
 };
 
