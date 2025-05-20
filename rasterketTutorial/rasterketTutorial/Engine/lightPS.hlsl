@@ -16,7 +16,8 @@ cbuffer LightBuffer
 	float4 ambientColor;	// 환경광 색상
 	float4 diffuseColor;	// 빛의 색상
 	float3 lightDirection;	// 빛의 방향
-	float padding;			// 성능 최적화를 위한 패딩
+	float specularPower;    // 정반사광 세기, 클수록 강조되는 범위가 넓어짐
+	float4 specularColor;   // 정반사광 색상
 };
 
 struct PixelInputType
@@ -24,7 +25,17 @@ struct PixelInputType
 	float4 position : SV_POSITION;
 	float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
+	float3 viewDirection : TEXCOORD1;
 };
+
+// 정반사광의 공식은 다음과 같다.
+// SpecularLighting = SpecularLightColor * (ViewingDirection dot ReflectionVector) power SpecularReflectionPower
+// 
+// 물체로부터 빛이 반사되는 벡터를 구하는 공식은 다음과 같다.
+// ReflectionVector = 2 * LightIntensity * VertexNormal - LightDirection
+// 
+// 카메라가 바라보는 방향은 카메라 위치에서 정점이 위치한 지점을 빼면 된다.
+// ViewingDirection = CameraPosition - VertexPosition
 
 float4 LightPixelShader(PixelInputType input) : SV_TARGET
 {
@@ -32,34 +43,47 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
 	float3 lightDir;
 	float lightIntensity;
 	float4 color;
+	float3 reflection;
+	float4 specular;
 	
 	// 도형의 uv좌표에 대응되는 텍셀의 색상을 샘플러가 알려준다.
 	// 도형 픽셀에 그릴 색상이 결정되면 그 픽셀을 그릴 것이다.
 	textureColor = shaderTexture.Sample(SampleType, input.tex);
 	
-	// 환경광을 묘사하기 위해, 도형의 모든 평면 픽셀에 환경광 색상 최소치를 할당한다.
+	// 환경광은 평면의 모든 텍셀의 최소치
 	color = ambientColor;
 	
-	// 직사 방향을 반전시킨다.
+	specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	
+	// 직사 방향 반전
 	lightDir = -saturate(lightDirection);
 	
-	// 빛의 방향과 도형 평면의 노말을 내적해서 빛의 세기를 구한다.
+	// 빛의 세기 = 내적(빛의 방향, 법석 벡터)
 	lightIntensity = saturate(dot(lightDir, input.normal));
 	
-	// diffuse color에 빛의 세기를 적용시켜, 직사광의 색상을 구한다.
+	// 난반사광 = 난반사광 색상 * 빛의 세기
 	// 
 	// 빛의 세기가 음수일 경우, 환경광이 제대로 표현되지 않을 수 있다.
 	// 따라서 빛의 세기가 0을 넘길 경우에만 직사광을 적용한다.
 	if (lightIntensity > 0.0f)
 	{
 		color += diffuseColor * lightIntensity;
+		
+		// 환경광으로 인해 빛의 색상이 1을 넘기지 않도록 clamp 처리ㅁ
+		color = saturate(color);
+
+		// 빛이 반사되는 방향 정의
+		reflection = normalize((2.0f * lightIntensity * input.normal) - lightDir);
+		
+		// 관찰자가 바라보는 방향과 빛이 반사되는 방향이 일치할 수록, 정반사광이 강조하는 범위가 넓어진다.
+		specular = pow(saturate(dot(reflection, input.viewDirection)), specularPower);
 	}
-	
-	// 환경광으로 인해 빛의 색상이 1을 넘기지 않도록 clamp 처리
-	color = saturate(color);
 	
 	// 텍스처에 빛을 입힌다.
 	color *= textureColor;
+	
+	// 뚜렷한 강조를 위해 텍스처 이후에 정반사광을 더 해준다.
+	color = saturate(color + specular);
 	
 	return color;
 }

@@ -35,7 +35,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	char modelFilename[128];
 	char textureFilename[128];
 
-	strcpy_s(modelFilename, "../rasterketTutorial/Engine/data/cube.txt");
+	strcpy_s(modelFilename, "../rasterketTutorial/Engine/data/sphere.txt");
 	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/stone01.tga");
 
 	m_Direct3D = new D3DClass;
@@ -70,9 +70,11 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	}
 
 	m_Light = new LightClass;
-	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f); // 확산광 세팅
-	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);    // diffuse 색상 세팅
-	m_Light->SetDirection(1.0f, 0.0f, 0.0f);			 // 직사광 방향 세팅
+	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);    // 환경광 세팅
+	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);    // 난반사광 색상 세팅
+	m_Light->SetDirection(1.0f, 0.0f, 1.0f);			 // 직사광 방향 세팅
+	m_Light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);	 // 정반사광 방향 세팅
+	m_Light->SetSpecularColor(32.0f);					 // 정반사광 세기 세팅
 
 	return true;
 }
@@ -118,7 +120,7 @@ bool ApplicationClass::Frame()
 	static float rotation = 0.0f;
 	bool result;
 
-	rotation -= DirectX::XMConvertToRadians(DirectX::XM_2PI) * 0.2f;
+	rotation -= DirectX::XMConvertToRadians(DirectX::XM_2PI) * 0.25f;
 	if (rotation < 0.0f)
 	{
 		rotation += 360.0f;
@@ -168,7 +170,8 @@ bool ApplicationClass::Render(float rotation)
 	// 상수버퍼, 버텍스 쉐이더, 픽셀쉐이더 세팅, Draw Call
 	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
 		worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(),
-		m_Light->GetDirection(), m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+		m_Light->GetDirection(), m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(),
+		m_Camera->GetPosition(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
 	if (!result)
 	{
 		return false;

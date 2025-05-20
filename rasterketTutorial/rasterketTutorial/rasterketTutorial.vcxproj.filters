@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Engine">
-      <UniqueIdentifier>{fee397b1-9418-474a-9023-faff4ac276a6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Grapihc">
       <UniqueIdentifier>{4fc9740a-ff6d-4c1b-b9c2-1255975b69be}</UniqueIdentifier>
     </Filter>
@@ -27,6 +24,9 @@
     </Filter>
     <Filter Include="Grapihc\Res">
       <UniqueIdentifier>{39e6c266-bdd5-4bc1-9b64-3e6b7d3ed498}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL">
+      <UniqueIdentifier>{fee397b1-9418-474a-9023-faff4ac276a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -108,22 +108,22 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="colorVS.hlsl">
-      <Filter>Engine</Filter>
+      <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Engine\colorPS.hlsl">
-      <Filter>Engine</Filter>
+      <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Engine\textureVS.hlsl">
-      <Filter>Engine</Filter>
+      <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Engine\texturePS.hlsl">
-      <Filter>Engine</Filter>
+      <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Engine\lightPS.hlsl">
-      <Filter>Engine</Filter>
+      <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Engine\lightVS.hlsl">
-      <Filter>Engine</Filter>
+      <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

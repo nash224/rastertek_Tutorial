@@ -57,11 +57,27 @@ public:
 
 	DirectX::XMFLOAT3 GetDirection() const { return m_direction; }
 
+	void SetSpecularColor(float red, float green, float blue, float alpha)
+	{
+		m_specularColor = DirectX::XMFLOAT4{ red, green, blue, alpha };
+	}
+
+	DirectX::XMFLOAT4 GetSpecularColor() const { return m_specularColor; }
+
+	void SetSpecularColor(float specularPower)
+	{
+		m_specularPower = specularPower;
+	}
+
+	float GetSpecularPower() const { return m_specularPower; }
+
 
 private:
 	DirectX::XMFLOAT4 m_ambientColor;
 	DirectX::XMFLOAT4 m_diffuseColor;
 	DirectX::XMFLOAT3 m_direction;
+	DirectX::XMFLOAT4 m_specularColor;
+	float m_specularPower;
 
 };
 
