@@ -1,4 +1,9 @@
 
+// 버텍스 쉐이더와 동일하게 라이팅에 대한 정보를 매크로로 정의
+// 쉐이더 내부에서 사용하는 헤더 파일을 만들고 
+// 헤더 파일을 포함하는 것이 더 좋은 방법으로 보임
+#define NUM_LIGHTS 4
+
 // Texture2D는 2차원 배열의 픽셀 덩어리
 // 레스터라이저 단계에서 건져낸 도형의 픽셀을
 // 샘플러가 텍스처와 도형의 uv에 대응되는 색상을 알려준다.
@@ -11,13 +16,9 @@ Texture2D shaderTexture : register(t0);
 // global samplerState 0번 슬롯을 참조하겠다.
 SamplerState SampleType : register(s0);
 
-cbuffer LightBuffer
+cbuffer LightColorBuffer
 {
-	float4 ambientColor;	// 환경광 색상
-	float4 diffuseColor;	// 빛의 색상
-	float3 lightDirection;	// 빛의 방향
-	float specularPower;    // 정반사광 세기, 클수록 강조되는 범위가 넓어짐
-	float4 specularColor;   // 정반사광 색상
+	float4 diffuseColor[NUM_LIGHTS]; // 확산광 색상
 };
 
 struct PixelInputType
@@ -25,65 +26,42 @@ struct PixelInputType
 	float4 position : SV_POSITION;
 	float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
-	float3 viewDirection : TEXCOORD1;
+	float3 lightPos[NUM_LIGHTS] : TEXCOORD1;
 };
-
-// 정반사광의 공식은 다음과 같다.
-// SpecularLighting = SpecularLightColor * (ViewingDirection dot ReflectionVector) power SpecularReflectionPower
-// 
-// 물체로부터 빛이 반사되는 벡터를 구하는 공식은 다음과 같다.
-// ReflectionVector = 2 * LightIntensity * VertexNormal - LightDirection
-// 
-// 카메라가 바라보는 방향은 카메라 위치에서 정점이 위치한 지점을 빼면 된다.
-// ViewingDirection = CameraPosition - VertexPosition
 
 float4 LightPixelShader(PixelInputType input) : SV_TARGET
 {
 	float4 textureColor;
-	float3 lightDir;
-	float lightIntensity;
+	float lightIntensity[NUM_LIGHTS];
+	float4 colorArray[NUM_LIGHTS];
+	float4 colorSum;
 	float4 color;
-	float3 reflection;
-	float4 specular;
+	int i;
 	
 	// 도형의 uv좌표에 대응되는 텍셀의 색상을 샘플러가 알려준다.
 	// 도형 픽셀에 그릴 색상이 결정되면 그 픽셀을 그릴 것이다.
 	textureColor = shaderTexture.Sample(SampleType, input.tex);
 	
-	// 환경광은 평면의 모든 텍셀의 최소치
-	color = ambientColor;
-	
-	specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	
-	// 직사 방향 반전
-	lightDir = -normalize(lightDirection);
-	
-	// 빛의 세기 = 내적(빛의 방향, 법석 벡터)
-	lightIntensity = saturate(dot(lightDir, input.normal));
-	
-	// 난반사광 = 난반사광 색상 * 빛의 세기
-	// 
-	// 빛의 세기가 음수일 경우, 환경광이 제대로 표현되지 않을 수 있다.
-	// 따라서 빛의 세기가 0을 넘길 경우에만 직사광을 적용한다.
-	if (lightIntensity > 0.0f)
+	// 각 광원이 합쳐진 빛의 색상을 얻는 공식은 난반사광의 공식과 매우 비슷하다.
+	// 먼저 각 광원의 세기와 확산광 색상으로부터 빛의 색을 알아내고 
+	// 전부 합해서 텍셀과 곱하면 된다.
+	for (i = 0; i < NUM_LIGHTS; i++)
 	{
-		color += diffuseColor * lightIntensity;
-		
-		// 환경광으로 인해 빛의 색상이 1을 넘기지 않도록 clamp 처리
-		color = saturate(color);
-
-		// 빛이 반사되는 방향 정의
-		reflection = normalize((2.0f * lightIntensity * input.normal) - lightDir);
-		
-		// 관찰자가 바라보는 방향과 빛이 반사되는 방향이 일치할 수록, 정반사광이 강조하는 범위는 좁아진다..
-		specular = pow(saturate(dot(reflection, input.viewDirection)), specularPower);
+		lightIntensity[i] = saturate(dot(input.lightPos[i], input.normal));
+		colorArray[i] = lightIntensity[i] * diffuseColor[i];
 	}
 	
-	// 텍스처에 빛을 입힌다.
-	color *= textureColor;
+	colorSum = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	
-	// 뚜렷한 강조를 위해 텍스처 이후에 정반사광을 더 해준다.
-	color = saturate(color + specular * specularColor);
+	for (i = 0; i < NUM_LIGHTS; i++)
+	{
+		colorSum.r += colorArray[i].r;
+		colorSum.g += colorArray[i].g;
+		colorSum.b += colorArray[i].b;
+	}
+	
+	// 텍셀에 다중광원의 최종색상을 입힌다.
+	color = textureColor * saturate(colorSum);
 	
 	return color;
 }

@@ -1,4 +1,7 @@
 
+// 다중 광원을 구현하기 위해서는 광원의 정보를 담고 있는 배열이 필요하다.
+// 정적 배열을 할당하기 위해 광원의 수를 정의한다.
+#define NUM_LIGHTS 4
 
 cbuffer MatrixBuffer
 {
@@ -7,17 +10,24 @@ cbuffer MatrixBuffer
 	matrix projectionMatrix;
 };
 
-cbuffer CameraBuffer
+// 광원에 대한 정보
+cbuffer LightPositionBuffer
 {
-	float3 cameraPosition;
-	float padding;
+	float4 lightPosition[NUM_LIGHTS];
 };
+
+// 이번 예제에서는 정반사광을 다루지 않기 때문에 주석처리한다.
+//cbuffer CameraBuffer
+//{
+//	float3 cameraPosition;
+//	float padding;
+//};
 
 struct VertexInputType
 {
 	float4 position : POSITION;
 	float2 tex : TEXCOORD0;
-	float3 normal : NORMAL; // 빛의 반사각을 알아내기 위한 도형의 노말(표면) 벡터
+	float3 normal : NORMAL; 
 };
 
 struct PixelInputType
@@ -25,7 +35,7 @@ struct PixelInputType
 	float4 position : SV_POSITION;
 	float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
-	float3 viewDireciton : TEXCOORD1; // 카메라가 물체의 표면을 바라보는 방향
+	float3 lightPos[NUM_LIGHTS] : TEXCOORD1;
 };
 
 // 
@@ -33,6 +43,7 @@ PixelInputType LightVertexShader(VertexInputType input)
 {
 	PixelInputType output;
 	float4 worldPosition;
+	int i;
 	
     // 점의 w 위치 정보를 반드시 1로 설정할 것.
     // 만약 0으로 설정 시, 점의 위치가 적용되지 않음
@@ -57,8 +68,12 @@ PixelInputType LightVertexShader(VertexInputType input)
 	// 각 픽셀당 연산하지 않아도 되서 연산 비용을 줄일 수 있다.
 	worldPosition = mul(input.position, worldMatrix);
 	
-	output.viewDireciton = cameraPosition.xyz - worldPosition.xyz;
-	output.viewDireciton = normalize(output.viewDireciton);
+	for (i = 0; i < NUM_LIGHTS; i++)
+	{
+		// 각 정점이 빛을 바라보는 방향
+		output.lightPos[i] = lightPosition[i].xyz - worldPosition.xyz;
+		output.lightPos[i] = normalize(output.lightPos[i]);
+	}
 	
-	return output;
+		return output;
 }

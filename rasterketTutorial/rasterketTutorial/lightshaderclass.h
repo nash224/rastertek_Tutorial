@@ -16,6 +16,11 @@
 #include <fstream>
 
 //---------------------------------------------------------------------------------------
+// GLOBALS
+//---------------------------------------------------------------------------------------
+const int NUM_LIGHTS = 4;
+
+//---------------------------------------------------------------------------------------
 // Class name: LightShaderClass
 //---------------------------------------------------------------------------------------
 /*
@@ -29,7 +34,7 @@
 	- 입력 레이아웃, 상수 버퍼, 쉐이더 인터페이스를 생성 및 관리
 	- 렌더링 전에 변환 행렬 등의 쉐이더 매개변수 설정
 	- 설정된 쉐이더를 이용해 도형 렌더링 수행
-	- 난반사광, 환경광, 정반사광 렌더링
+	- 다중 광원 렌더링
 */
 class LightShaderClass
 {
@@ -41,19 +46,14 @@ public:
 		DirectX::XMMATRIX projection;
 	};
 
-	struct CameraBufferType
+	struct LightColorBufferType
 	{
-		DirectX::XMFLOAT3 cameraPosition;
-		float padding;
+		DirectX::XMFLOAT4 diffuseColor[NUM_LIGHTS];
 	};
 
-	struct LightBufferType
+	struct LightPositionBufferType
 	{
-		DirectX::XMFLOAT4 ambientColor;     // 환경광 색상
-		DirectX::XMFLOAT4 diffuseColor;     // 난반사광 색상
-		DirectX::XMFLOAT3 lightDirection;   // 난반사광 방향
-		float specularPower;				// 정반사광 세기
-		DirectX::XMFLOAT4 specularColor;    // 정반사광 색상
+		DirectX::XMFLOAT4 lightPosition[NUM_LIGHTS];
 	};
 
 	LightShaderClass();
@@ -87,19 +87,14 @@ public:
 	 * @param		worldMarix			월드 행렬
 	 * @param		viewMarix			뷰 행렬
 	 * @param		projectionMarix		투영 행렬
-	 * @param		lightDirection		직사광 방향
-	 * @param		ambientColor		환경광 색상
-	 * @param		diffuseColor		난반사광 색상
-	 * @param		cameraPosition		카메라 위치
-	 * @param		specularColor		정반사광 색상
-	 * @param		specularPower		정반사광 세기
+	 * @param		diffuseColor		난반사광 색상에 대한 배열
+	 * @param		lightPosition		광원 위치에 대한 배열
 	 *
 	 * @return		bool				상수버퍼 세팅 유무
 	 */
 	bool Render(ID3D11DeviceContext* deviceContext, int indexCount,
 		DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix,
-		ID3D11ShaderResourceView* texture, DirectX::XMFLOAT3 lightDirection, DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor,
-		DirectX::XMFLOAT3 cameraPosition, DirectX::XMFLOAT4 specularColor, float specularPower);
+		ID3D11ShaderResourceView* texture, DirectX::XMFLOAT4 diffuseColor[], DirectX::XMFLOAT4 lightPosition[]);
 
 private:
 
@@ -154,8 +149,7 @@ private:
 	 */
 	bool SetShaderParamters(ID3D11DeviceContext* deviceContext,
 		DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix,
-		ID3D11ShaderResourceView* texture, DirectX::XMFLOAT3 lightDirection, DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor,
-		DirectX::XMFLOAT3 cameraPosition, DirectX::XMFLOAT4 specularColor, float specularPower);
+		ID3D11ShaderResourceView* texture, DirectX::XMFLOAT4 diffuseColor[], DirectX::XMFLOAT4 lightPosition[]);
 
 
 	/**
@@ -172,10 +166,10 @@ private:
 	ID3D11VertexShader* m_vertexShader;
 	ID3D11PixelShader* m_pixelShader;
 	ID3D11InputLayout* m_layout;
-	ID3D11Buffer* m_matrixBuffer;
 	ID3D11SamplerState* m_sampleState;
-	ID3D11Buffer* m_cameraBuffer;
-	ID3D11Buffer* m_lightBuffer;
+	ID3D11Buffer* m_matrixBuffer;
+	ID3D11Buffer* m_lightColorBuffer;
+	ID3D11Buffer* m_lightPositionBuffer;
 
 };
 

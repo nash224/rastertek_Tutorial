@@ -22,6 +22,7 @@ ApplicationClass::ApplicationClass()
 	m_Model = 0;
 	m_LightShader = 0;
 	m_Light = 0;
+	m_numLights = 0;
 }
 
 ApplicationClass::~ApplicationClass()
@@ -35,7 +36,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	char modelFilename[128];
 	char textureFilename[128];
 
-	strcpy_s(modelFilename, "../rasterketTutorial/Engine/data/sphere.txt");
+	strcpy_s(modelFilename, "../rasterketTutorial/Engine/data/plane.txt");
 	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/stone01.tga");
 
 	m_Direct3D = new D3DClass;
@@ -49,7 +50,8 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 
 	// 카메라 객체 생성
 	m_Camera = new CameraClass;
-	m_Camera->SetPosition(0.0f, 0.0f, -5.0f);
+	m_Camera->SetRotation(0.0f, 0.0f, 0.0f);
+	m_Camera->SetPosition(0.0f, 2.0f, -12.0f);
 
 	// Model 객체 생성
 	m_Model = new ModelClass;
@@ -69,12 +71,20 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 		return false;
 	}
 
-	m_Light = new LightClass;
-	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);    // 환경광 세팅
-	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);    // 난반사광 색상 세팅
-	m_Light->SetDirection(1.0f, 0.0f, 1.0f);			 // 직사광 방향 세팅
-	m_Light->SetSpecularColor(0.0f, 1.0f, 0.0f, 1.0f);	 // 정반사광 방향 세팅
-	m_Light->SetSpecularColor(32.0f);					 // 정반사광 세기 세팅
+	m_numLights = 4;
+
+	m_Light = new LightClass[m_numLights];
+	m_Light[0].SetDiffuseColor(1.0f, 0.0f, 0.0f, 1.0f); // red
+	m_Light[0].SetPosition(-3.0f, 1.0f, 3.0f);
+
+	m_Light[1].SetDiffuseColor(0.0f, 1.0f, 0.0f, 1.0f); // green
+	m_Light[1].SetPosition(3.0f, 1.0f, 3.0f);
+
+	m_Light[2].SetDiffuseColor(0.0f, 0.0f, 1.0f, 1.0f); // blue
+	m_Light[2].SetPosition(-3.0f, 1.0f, -3.0f);
+
+	m_Light[3].SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f); // white
+	m_Light[3].SetPosition(3.0f, 1.0f, -3.0f);
 
 	return true;
 }
@@ -110,29 +120,16 @@ void ApplicationClass::Shutdown()
 
 	if (m_Light)
 	{
-		delete m_Light;
+		delete[] m_Light;
 		m_Light = 0;
 	}
 }
 
 bool ApplicationClass::Frame()
 {
-	static float rotation = 0.0f;
 	bool result;
 
-	rotation -= DirectX::XMConvertToRadians(DirectX::XM_2PI) * 0.25f;
-	if (rotation < 0.0f)
-	{
-		rotation += 360.0f;
-	}
-
-	DirectX::XMVECTOR Front = DirectX::XMVECTOR{ 0.0f, 0.0f, 1.0f, 0.0f };
-	DirectX::XMVECTOR Vec = DirectX::XMVector3TransformNormal(Front, DirectX::XMMatrixRotationY(rotation));
-	DirectX::XMFLOAT3 Dir;
-	DirectX::XMStoreFloat3(&Dir, Vec);
-	m_Light->SetDirection(Dir);
-
-	result = Render(rotation);
+	result = Render(0.0f);
 	if (!result)
 	{
 		return false;
@@ -145,6 +142,8 @@ bool ApplicationClass::Render(float rotation)
 {
 	DirectX::XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 	DirectX::XMMATRIX scaleMatrix, rotateMatrix, translateMatrix, srMatrix;
+	DirectX::XMFLOAT4 diffuseColor[4], lightPosition[4]; // 100% 귀찮아서 이렇게 한듯
+	int i;
 	bool result;
 
 	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -170,14 +169,18 @@ bool ApplicationClass::Render(float rotation)
 	srMatrix = DirectX::XMMatrixMultiply(scaleMatrix, rotateMatrix);
 	worldMatrix = DirectX::XMMatrixMultiply(srMatrix, translateMatrix);
 
+	for (i = 0; i < m_numLights; i++)
+	{
+		diffuseColor[i] = m_Light[i].GetDiffuseColor();
+		lightPosition[i] = m_Light[i].GetPosition();
+	}
+
 	// 기하 도형 입력 세팅
 	m_Model->Render(m_Direct3D->GetDeviceContext());
 
 	// 상수버퍼, 버텍스 쉐이더, 픽셀쉐이더 세팅, Draw Call
 	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(),
-		m_Light->GetDirection(), m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(),
-		m_Camera->GetPosition(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
+		worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(), diffuseColor, lightPosition);
 	if (!result)
 	{
 		return false;

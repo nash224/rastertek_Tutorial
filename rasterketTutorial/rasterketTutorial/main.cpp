@@ -12,10 +12,9 @@
 // 원작자의 코드 스타일을 최대한 비슷하게 유지하도록 goto 문을 사용했음을 알려드립니다.
 // 예시) ModelClass::InitializeBuffers 
 
-// 참고 사이트: https://www.rastertek.com/
+// 참고 사이트: https://www.rastertek.com/dx11win10tut11.html
 
-// 이번 예제는 기하 도형의 모든 평면에 환경광을 적용해볼 것이다.
-//
+// 이번 예제는 다중광원(Multiple Point Lights)을 렌더링해볼 것이다.
 
 // 조작법: 
 //		- escape: exit application
