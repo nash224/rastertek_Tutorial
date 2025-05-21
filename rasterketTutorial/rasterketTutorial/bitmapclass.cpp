@@ -17,6 +17,8 @@ BitmapClass::BitmapClass()
 	m_bitmapHeight = 0;
 	m_renderX = 0;
 	m_renderY = 0;
+	m_renderScaleX = 1.0f;
+	m_renderScaleY = 1.0f;
 	m_prevPosX = 0;
 	m_prevPosY = 0;
 
@@ -31,7 +33,8 @@ BitmapClass::~BitmapClass()
 
 }
 
-bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int screenWidth, int screenHeight, char* textureFilename, int renderX, int renderY)
+bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
+	int screenWidth, int screenHeight, char* textureFilename, int renderX, int renderY, float ImageScaleX, float ImageScaleY)
 {
 	bool result;
 
@@ -40,6 +43,8 @@ bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCo
 
 	m_renderX = renderX;
 	m_renderY = renderY;
+
+	SetRenderScale(ImageScaleX, ImageScaleY);
 
 	result = InitializeBuffers(device);
 	if (!result)
@@ -187,7 +192,7 @@ void BitmapClass::ShutdownBuffers()
 
 bool BitmapClass::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 {
-	float left, right, top, bottom;
+	float left, right, top, bottom, ImageWidth, ImageHeight;
 	VertexType* vertices;
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -202,12 +207,16 @@ bool BitmapClass::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 	m_prevPosX = m_renderX;
 	m_prevPosY = m_renderY;
 
+	ImageWidth = (float)m_bitmapWidth * m_renderScaleX;
+	ImageHeight = (float)m_bitmapHeight * m_renderScaleY;
+
 	vertices = new VertexType[m_vertexCount];
 
+
 	left   = (float)(m_renderX - m_screenWidth / 2);
-	right  = left + float(m_bitmapWidth);
+	right  = left + ImageWidth;
 	top    = (float)(m_screenHeight / 2 - m_renderY);
-	bottom = top - float(m_bitmapHeight);
+	bottom = top - ImageHeight;
 
 	vertices[0].position = XMFLOAT3(left, top, 0.0f); // left top
 	vertices[0].texture = XMFLOAT2(0.0f, 0.0f);

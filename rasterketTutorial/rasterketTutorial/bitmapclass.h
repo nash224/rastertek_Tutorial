@@ -57,8 +57,10 @@ public:
 	int GetIndexCount() const { return m_indexCount; }
 	ID3D11ShaderResourceView* GetTexture() const { return m_texture->GetTexture(); }
 	void SetRenderLocation(int x, int y) { m_renderX = x; m_renderY = y; }
+	void SetRenderScale(float x, float y) { m_renderScaleX = x; m_renderScaleY = y; }
 
-	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int screenWidth, int screenHeight, char* textureFilename, int renderX, int renderY);
+	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, 
+		int screenWidth, int screenHeight, char* textureFilename, int renderX, int renderY, float ImageScaleX, float ImageScaleY);
 	void Shutdown();
 	bool Render(ID3D11DeviceContext* deviceContext);
 
@@ -125,6 +127,8 @@ private:
 	int m_screenHeight;
 	int m_bitmapWidth;
 	int m_bitmapHeight;
+	float m_renderScaleX;
+	float m_renderScaleY;
 	int m_renderX;
 	int m_renderY;
 	int m_prevPosX;

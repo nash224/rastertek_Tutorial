@@ -31,10 +31,8 @@ ApplicationClass::~ApplicationClass()
 bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
 	bool result;
-	char modelFilename[128];
 	char textureFilename[128];
 
-	strcpy_s(modelFilename, "../rasterketTutorial/Engine/data/plane.txt");
 	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/stone01.tga");
 
 	m_Direct3D = new D3DClass;
@@ -52,11 +50,13 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	// Model 梓端 持失
 	m_Bitmap = new BitmapClass;
-	result = m_Bitmap->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, textureFilename, 50, 50);
+	result = m_Bitmap->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, textureFilename, 50, 50, 0.5f, 0.5f);
 	if (!result)
 	{
 		return false;
 	}
+
+	m_Bitmap->SetRenderLocation(0, 0);
 
 	// ColorShader 持失
 	m_TextureShader = new TextureShaderClass;
