@@ -7,14 +7,14 @@
 // 경고 또는 Leak이 발생하지 않는 선에서 
 // 철저히 동일하게 작성되었음을 알려드립니다. 
 
-// 추신: 원작자의 코드를 보면 생성에 실패 시, 
+// 추신: 원작자 코드에서 자원 생성이 실패할 경우, 
 // 지역변수의 자원이 해제되지 않는 문제가 있습니다.
 // 원작자의 코드 스타일을 최대한 비슷하게 유지하도록 goto 문을 사용했음을 알려드립니다.
 // 예시) ModelClass::InitializeBuffers 
 
 // 참고 사이트: https://www.rastertek.com/dx11win10tut11.html
 
-// 이번 예제는 다중광원(Multiple Point Lights)을 렌더링해볼 것이다.
+// 이번 예제는 2D 렌더링을 다뤄볼 것이다.
 
 // 조작법: 
 //		- escape: exit application

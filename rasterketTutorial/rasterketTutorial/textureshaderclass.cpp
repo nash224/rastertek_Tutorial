@@ -55,13 +55,13 @@ void TextureShaderClass::Shutdown()
 }
 
 bool TextureShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
+	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX orthoMatrix,
 	ID3D11ShaderResourceView* texture)
 {
 	bool result;
 
 	// 상수버퍼 세팅
-	result = SetShaderParamters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, texture);
+	result = SetShaderParamters(deviceContext, worldMatrix, viewMatrix, orthoMatrix, texture);
 	if (!result)
 	{
 		return false;
@@ -290,7 +290,7 @@ void TextureShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND
 // 쉐이더 코드에서 사용할 상수 버퍼 세팅
 // 픽셀 쉐이더의 전역 텍스처 슬롯에 사용할 텍스처 세팅
 bool TextureShaderClass::SetShaderParamters(ID3D11DeviceContext* deviceContext,
-	DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix,
+	DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX orthoMatrix,
 	ID3D11ShaderResourceView* texture)
 {
 	HRESULT result;
@@ -301,7 +301,7 @@ bool TextureShaderClass::SetShaderParamters(ID3D11DeviceContext* deviceContext,
 	// d3d11 형식에 맞는 메트릭스 형식으로 변환
 	worldMatrix = XMMatrixTranspose(worldMatrix);
 	viewMatrix = XMMatrixTranspose(viewMatrix);
-	projectionMatrix = XMMatrixTranspose(projectionMatrix);
+	orthoMatrix = XMMatrixTranspose(orthoMatrix);
 
 	// cpu에서 자원을 gpu로 보낼 때, gpu가 접근하면 문제가 발생한다.
 	// gpu가 해당 자원을 접근하지 못하도록 Lock을 건다
@@ -321,7 +321,7 @@ bool TextureShaderClass::SetShaderParamters(ID3D11DeviceContext* deviceContext,
 	dataPtr = (MatrixBufferType*)mappedResource.pData;
 	dataPtr->world = worldMatrix;
 	dataPtr->view = viewMatrix;
-	dataPtr->projection = projectionMatrix;
+	dataPtr->projection = orthoMatrix;
 
 	// 데이터를 전부 적제했다면 Unlock 수행
 	// 그냥 빠져 나갈 시, gpu는 Deadlock

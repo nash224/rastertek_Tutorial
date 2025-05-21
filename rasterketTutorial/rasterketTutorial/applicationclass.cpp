@@ -19,10 +19,8 @@ ApplicationClass::ApplicationClass()
 {
 	m_Direct3D = 0;
 	m_Camera = 0;
-	m_Model = 0;
-	m_LightShader = 0;
-	m_Light = 0;
-	m_numLights = 0;
+	m_Bitmap = 0;
+	m_TextureShader = 0;
 }
 
 ApplicationClass::~ApplicationClass()
@@ -30,7 +28,7 @@ ApplicationClass::~ApplicationClass()
 
 }
 
-bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
+bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
 	bool result;
 	char modelFilename[128];
@@ -40,7 +38,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/stone01.tga");
 
 	m_Direct3D = new D3DClass;
-	result = m_Direct3D->Initialize(screenWidth, screenHieght, VSYNC_ENABLED, hwnd, 
+	result = m_Direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd,
 									FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	if (!result)
 	{
@@ -50,41 +48,24 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHieght, HWND hwnd)
 
 	// 카메라 객체 생성
 	m_Camera = new CameraClass;
-	m_Camera->SetRotation(0.0f, 0.0f, 0.0f);
-	m_Camera->SetPosition(0.0f, 2.0f, -12.0f);
+	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
 
 	// Model 객체 생성
-	m_Model = new ModelClass;
-	result = m_Model->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), modelFilename, textureFilename);
+	m_Bitmap = new BitmapClass;
+	result = m_Bitmap->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, textureFilename, 50, 50);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize Model", L"Error", MB_OK);
 		return false;
 	}
 
 	// ColorShader 생성
-	m_LightShader = new LightShaderClass;
-	result = m_LightShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	m_TextureShader = new TextureShaderClass;
+	result = m_TextureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize ColorShader", L"Error", MB_OK);
 		return false;
 	}
-
-	m_numLights = 4;
-
-	m_Light = new LightClass[m_numLights];
-	m_Light[0].SetDiffuseColor(1.0f, 0.0f, 0.0f, 1.0f); // red
-	m_Light[0].SetPosition(-3.0f, 1.0f, 3.0f);
-
-	m_Light[1].SetDiffuseColor(0.0f, 1.0f, 0.0f, 1.0f); // green
-	m_Light[1].SetPosition(3.0f, 1.0f, 3.0f);
-
-	m_Light[2].SetDiffuseColor(0.0f, 0.0f, 1.0f, 1.0f); // blue
-	m_Light[2].SetPosition(-3.0f, 1.0f, -3.0f);
-
-	m_Light[3].SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f); // white
-	m_Light[3].SetPosition(3.0f, 1.0f, -3.0f);
 
 	return true;
 }
@@ -104,24 +85,18 @@ void ApplicationClass::Shutdown()
 		m_Camera = 0;
 	}
 
-	if (m_Model)
+	if (m_Bitmap)
 	{
-		m_Model->Shutdown();
-		delete m_Model;
-		m_Model = 0;
+		m_Bitmap->Shutdown();
+		delete m_Bitmap;
+		m_Bitmap = 0;
 	}
 
-	if (m_LightShader)
+	if (m_TextureShader)
 	{
-		m_LightShader->Shutdown();
-		delete m_LightShader;
-		m_LightShader = 0;
-	}
-
-	if (m_Light)
-	{
-		delete[] m_Light;
-		m_Light = 0;
+		m_TextureShader->Shutdown();
+		delete m_TextureShader;
+		m_TextureShader = 0;
 	}
 }
 
@@ -129,7 +104,7 @@ bool ApplicationClass::Frame()
 {
 	bool result;
 
-	result = Render(0.0f);
+	result = Render();
 	if (!result)
 	{
 		return false;
@@ -138,12 +113,10 @@ bool ApplicationClass::Frame()
 	return true;
 }
 
-bool ApplicationClass::Render(float rotation)
+bool ApplicationClass::Render()
 {
-	DirectX::XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
-	DirectX::XMMATRIX scaleMatrix, rotateMatrix, translateMatrix, srMatrix;
-	DirectX::XMFLOAT4 diffuseColor[4], lightPosition[4]; // 100% 귀찮아서 이렇게 한듯
-	int i;
+	// 3D상에 존재하는 오브젝트를 스크린 공간에 사상하기 위해 직교투영 사용
+	DirectX::XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
 	bool result;
 
 	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -154,37 +127,24 @@ bool ApplicationClass::Render(float rotation)
 	// WVP 초기화
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 	m_Camera->GetViewMatrix(viewMatrix);
-	m_Direct3D->GetProjectionMatrix(projectionMatrix);
+	m_Direct3D->GetOrthoMatrix(orthoMatrix);
 
-	DirectX::XMVECTOR Quaternion = DirectX::XMQuaternionRotationRollPitchYaw(0.0f, rotation, 0.0f);
-
-	// 도형을 조작하려면 도형의 월드 SRT행렬을 구해야 한다.
-	// 월드 SRT행렬은 scale, rotation, transition 
-	// 그리고 세계 기준이 되는 월드 행렬(대부분 단위 행렬)을 곱하여 구할 수 있다.
-
-	scaleMatrix = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
-	rotateMatrix = DirectX::XMMatrixRotationQuaternion(Quaternion);
-	translateMatrix = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-
-	srMatrix = DirectX::XMMatrixMultiply(scaleMatrix, rotateMatrix);
-	worldMatrix = DirectX::XMMatrixMultiply(srMatrix, translateMatrix);
-
-	for (i = 0; i < m_numLights; i++)
-	{
-		diffuseColor[i] = m_Light[i].GetDiffuseColor();
-		lightPosition[i] = m_Light[i].GetPosition();
-	}
+	// 2D 렌더링에서는 깊이를 끈다.
+	m_Direct3D->TurnZBufferOff();
 
 	// 기하 도형 입력 세팅
-	m_Model->Render(m_Direct3D->GetDeviceContext());
+	m_Bitmap->Render(m_Direct3D->GetDeviceContext());
 
 	// 상수버퍼, 버텍스 쉐이더, 픽셀쉐이더 세팅, Draw Call
-	result = m_LightShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(), diffuseColor, lightPosition);
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Bitmap->GetIndexCount(),
+		worldMatrix, viewMatrix, orthoMatrix, m_Bitmap->GetTexture());
 	if (!result)
 	{
 		return false;
 	}
+
+	// 2D렌더링이 끝났다면 다시 깊이를 지원한다.
+	m_Direct3D->TurnZBufferOn();
 
 	// 화면에 출력
 	m_Direct3D->EndScene();

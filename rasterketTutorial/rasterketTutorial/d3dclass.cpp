@@ -14,6 +14,7 @@ D3DClass::D3DClass()
 	, m_renderTargetView(nullptr)
 	, m_depthStencilBuffer(nullptr)
 	, m_depthStencilState(nullptr)
+	, m_depthDisabledStencilState(nullptr)
 	, m_depthStencilView(nullptr)
 	, m_rasterState(nullptr)
 	, m_projectionMatrix(DirectX::XMMatrixIdentity())
@@ -46,6 +47,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	D3D11_TEXTURE2D_DESC depthBufferDesc;
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	D3D11_RASTERIZER_DESC rasterDesc;
 	D3D_FEATURE_LEVEL featurelevel = {};
@@ -286,6 +288,33 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 	}
 
+
+	ZeroMemory(&depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc));
+
+	// 깊이버퍼를 끄기위한 2번째 깊이-스텐실 스테이트
+	// 2D렌더링에서 사용된다.
+	depthDisabledStencilDesc.DepthEnable = false; // 깊이 비활성화
+	depthDisabledStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthDisabledStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthDisabledStencilDesc.StencilEnable    = true; // 스텐실 활성화
+	depthDisabledStencilDesc.StencilReadMask = 0xFF;
+	depthDisabledStencilDesc.StencilWriteMask = 0xFF;
+	depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthDisabledStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	// Create depth stencil state
+	result = m_device->CreateDepthStencilState(&depthDisabledStencilDesc, &m_depthDisabledStencilState);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
 	// 출력 병합기에 스텐실 스테이트 바인딩
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState, 1);
 
@@ -387,6 +416,12 @@ void D3DClass::Shutdown()
 		m_depthStencilState = 0;
 	}
 
+	if (m_depthDisabledStencilState)
+	{
+		m_depthDisabledStencilState->Release();
+		m_depthDisabledStencilState = 0;
+	}
+
 	if (m_depthStencilBuffer)
 	{
 		m_depthStencilBuffer->Release();
@@ -443,4 +478,14 @@ void D3DClass::EndScene()
 		// 바로 출력
 		m_swapChain->Present(0, 0);
 	}
+}
+
+void D3DClass::TurnZBufferOn()
+{
+	m_deviceContext->OMSetDepthStencilState(m_depthStencilState, 1);
+}
+
+void D3DClass::TurnZBufferOff()
+{
+	m_deviceContext->OMSetDepthStencilState(m_depthDisabledStencilState, 1);
 }

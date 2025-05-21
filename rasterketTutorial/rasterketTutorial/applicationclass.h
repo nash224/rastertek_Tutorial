@@ -18,6 +18,8 @@
 #include "lightclass.h"
 #include "modelclass.h"
 #include "cameraclass.h"
+#include "textureshaderclass.h"
+#include "bitmapclass.h"
 
 
 //---------------------------------------------------------------------------------------
@@ -75,19 +77,15 @@ private:
 	/**
 	 * @brief		Render		화면에 물체를 그린다
 	 * 
-	 * @param		rotaiton	직사광의 빛의 방향 값
-	 *
 	 * @return		bool		렌더링 중에 발생한 오류 유무
 	 */
-	bool Render(float rotation);
+	bool Render();
 
 private:
 	D3DClass* m_Direct3D; // 렌더링을 위한 d3d 객체
 	CameraClass* m_Camera;
-	ModelClass* m_Model;
-	LightShaderClass* m_LightShader;
-	LightClass* m_Light;
-	int m_numLights;
+	BitmapClass* m_Bitmap;
+	TextureShaderClass* m_TextureShader;
 
 };
 

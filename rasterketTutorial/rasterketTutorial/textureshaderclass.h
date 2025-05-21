@@ -77,7 +77,7 @@ public:
 	 * @return		bool				상수버퍼 세팅 유무
 	 */
 	bool Render(ID3D11DeviceContext* deviceContext, int indexCount,
-		DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix,
+		DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX orthoMatrix,
 		ID3D11ShaderResourceView* texture);
 
 private:
@@ -132,7 +132,7 @@ private:
 	 * @warning		상수 버퍼에
 	 */
 	bool SetShaderParamters(ID3D11DeviceContext* deviceContext,
-		DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix,
+		DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX orthoMatrix,
 		ID3D11ShaderResourceView* texture);
 
 
