@@ -3,4 +3,4 @@
 ../rasterketTutorial/Engine/data/sprite02.tga
 ../rasterketTutorial/Engine/data/sprite03.tga
 ../rasterketTutorial/Engine/data/sprite04.tga
-250
+0.1f

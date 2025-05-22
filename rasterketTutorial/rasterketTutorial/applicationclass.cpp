@@ -34,7 +34,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	bool result;
 	char textureFilename[128];
 
-	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/sprite_data_01.txt");
+	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/sprite_data_02.txt");
 
 	m_Direct3D = new D3DClass;
 	result = m_Direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd,
@@ -58,7 +58,8 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	m_Sprite->SetRenderLocation(0, 0);
-	m_Sprite->SetDuration(0.15f);
+	m_Sprite->SetRenderScale(5.0f, 5.0f);
+	// m_Sprite->SetDuration(0.15f);
 
 	// ColorShader »ı¼º
 	m_TextureShader = new TextureShaderClass;
@@ -123,6 +124,12 @@ bool ApplicationClass::Frame()
 	m_Timer->Frame();
 	const float deltaTime = m_Timer->GetTime();
 
+	static float PosX = 0;
+	const float movement = 50.0f;
+
+	PosX += movement * deltaTime;
+
+	m_Sprite->SetRenderLocation((int)PosX, 0);
 	m_Sprite->Update(deltaTime);
 
 	result = Render();

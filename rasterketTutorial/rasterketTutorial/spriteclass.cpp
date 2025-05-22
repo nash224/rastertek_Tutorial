@@ -224,12 +224,8 @@ bool SpriteClass::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 	VertexType* dataPtr;
 
 	// 렌더링될 위치가 동일할 경우 업데이트를 수행하지 않음
-	if ((m_prevPosX == m_renderX) && (m_prevPosY == m_renderY))
-	{
-		return true;
-	}
-
-	if ((m_prevScaleX == m_renderScaleX) && (m_prevScaleY == m_renderScaleY))
+	if ((m_prevPosX == m_renderX) && (m_prevPosY == m_renderY) 
+		&& (m_prevScaleX == m_renderScaleX) && (m_prevScaleY == m_renderScaleY))
 	{
 		return true;
 	}
