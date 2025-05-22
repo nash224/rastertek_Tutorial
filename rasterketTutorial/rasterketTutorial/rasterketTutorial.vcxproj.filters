@@ -28,6 +28,9 @@
     <Filter Include="HLSL">
       <UniqueIdentifier>{fee397b1-9418-474a-9023-faff4ac276a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Time">
+      <UniqueIdentifier>{a24028ce-1aed-4d3d-820d-88e0e2788a0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colorshaderclass.h">
@@ -66,8 +69,11 @@
     <ClInclude Include="modelclass.h">
       <Filter>Object\Shape</Filter>
     </ClInclude>
-    <ClInclude Include="bitmapclass.h">
+    <ClInclude Include="spriteclass.h">
       <Filter>Object\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="timeclass.h">
+      <Filter>Time</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -105,11 +111,14 @@
       <Filter>Grapihc\Res</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="bitmapclass.cpp">
+    <ClCompile Include="spriteclass.cpp">
       <Filter>Object\Shape</Filter>
     </ClCompile>
     <ClCompile Include="modelclass.cpp">
       <Filter>Object\Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="timeclass.cpp">
+      <Filter>Time</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

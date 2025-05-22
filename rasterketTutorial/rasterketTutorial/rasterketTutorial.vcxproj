@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h" />
-    <ClInclude Include="bitmapclass.h" />
+    <ClInclude Include="spriteclass.h" />
     <ClInclude Include="cameraclass.h">
       <SubType>
       </SubType>
@@ -53,10 +53,14 @@
       <SubType>
       </SubType>
     </ClInclude>
+    <ClInclude Include="timeclass.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="applicationclass.cpp" />
-    <ClCompile Include="bitmapclass.cpp" />
+    <ClCompile Include="spriteclass.cpp" />
     <ClCompile Include="cameraclass.cpp">
       <SubType>
       </SubType>
@@ -87,6 +91,10 @@
       </SubType>
     </ClCompile>
     <ClCompile Include="textureshaderclass.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+    <ClCompile Include="timeclass.cpp">
       <SubType>
       </SubType>
     </ClCompile>

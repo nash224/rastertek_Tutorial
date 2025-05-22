@@ -1,11 +1,11 @@
 //***************************************************************************************
-// bitmapclass.h by nash224 Visual Studio (C++) 2025 All Rights Reserved.
+// spriteclass.h by nash224 Visual Studio (C++) 2025 All Rights Reserved.
 //***************************************************************************************
 
 #pragma once
 
-#ifndef __DEFINE_BITMAPCLASS_H_
-#define __DEFINE_BITMAPCLASS_H_
+#ifndef __DEFINE_SPRITECLASS_H_
+#define __DEFINE_SPRITECLASS_H_
 
 
 //---------------------------------------------------------------------------------------
@@ -22,20 +22,17 @@
 //---------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------
-// Class name: BitmapClass
+// Class name: spriteclass
 //---------------------------------------------------------------------------------------
 /*
 목적:
-	스크린 화면에 2D 이미지를 출력하는 클래스
-	기하 도형을 표현하기 위해 버텍스 버퍼 및 인덱스 버퍼를 
-	생성 및 관리, 해제를 포함한 과정을 캡슐화합니다.
+	 2D 화면에 표시되는 스프라이트를 나타내는 클래스
 
 기능:
-	- 버텍스 쉐이더 및 픽셀 쉐이더 생성 및 관리
-	- 렌더링 전에 기하 도형을 그리는 방법과 입력 조합기 세팅
-	- GPU에 적제된 정점 데이터를 CPU에서 수정
+	- 텍스처 할당 및 렌더링
+	- 애니메이션 프레임 제어
 */
-class BitmapClass
+class SpriteClass
 {
 public:
 	struct VertexType
@@ -44,25 +41,30 @@ public:
 		DirectX::XMFLOAT2 texture;
 	};
 
-	// 기하 도형의 정점 데이터를 구성하는 포맷 형식
-	struct ModelType
-	{
-		float x, y, z; // vertex
-		float tu, tv; // texture uv
-	};
-
-	BitmapClass();
-	~BitmapClass();
+	SpriteClass();
+	~SpriteClass();
 
 	int GetIndexCount() const { return m_indexCount; }
-	ID3D11ShaderResourceView* GetTexture() const { return m_texture->GetTexture(); }
+	ID3D11ShaderResourceView* GetTexture() const { return m_textures[m_currentTexture].GetTexture(); }
 	void SetRenderLocation(int x, int y) { m_renderX = x; m_renderY = y; }
 	void SetRenderScale(float x, float y) { m_renderScaleX = x; m_renderScaleY = y; }
+	void SetDuration(float duration) { m_cycleTime = duration; };
 
 	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, 
-		int screenWidth, int screenHeight, char* textureFilename, int renderX, int renderY, float ImageScaleX, float ImageScaleY);
+		int screenWidth, int screenHeight, char* spriteFilename, int renderX, int renderY, float ImageScaleX, float ImageScaleY);
 	void Shutdown();
 	bool Render(ID3D11DeviceContext* deviceContext);
+
+
+	/**
+	 * @brief		Update		애니메이션 프레임 전환 제어
+	 *
+	 * @param		frameTime		이전 프레임부터 현재 프레임까지 걸린 시간
+	 *
+	 * @return		UpdateBuffers에서 도형의 크기를 결정하기 때문에,
+	 *				UpdateBuffers가 호출되기 전에 호출되어야 합니다.
+	 */
+	void Update(float frameTime);
 
 	/**
 	 * @brief		UpdateBuffers		정점 버퍼 데이터 변경
@@ -129,16 +131,23 @@ private:
 	int m_bitmapHeight;
 	float m_renderScaleX;
 	float m_renderScaleY;
+	float m_prevScaleX;
+	float m_prevScaleY;
 	int m_renderX;
 	int m_renderY;
 	int m_prevPosX;
 	int m_prevPosY;
 
+
 	ID3D11Buffer* m_vertexBuffer;
 	ID3D11Buffer* m_indexBuffer;
 
-	TextureClass* m_texture;
+	TextureClass* m_textures;
+	int m_textureCount;
+	float m_cycleTime;
+	float m_frameTime;
+	int m_currentTexture;
 };
 
 
-#endif // !__DEFINE_BITMAPCLASS_H_
+#endif // !__DEFINE_SPRITECLASS_H_

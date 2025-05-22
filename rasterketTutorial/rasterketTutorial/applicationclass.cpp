@@ -19,7 +19,8 @@ ApplicationClass::ApplicationClass()
 {
 	m_Direct3D = 0;
 	m_Camera = 0;
-	m_Bitmap = 0;
+	m_Sprite = 0;
+	m_Timer = 0;
 	m_TextureShader = 0;
 }
 
@@ -33,7 +34,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	bool result;
 	char textureFilename[128];
 
-	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/stone01.tga");
+	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/sprite_data_01.txt");
 
 	m_Direct3D = new D3DClass;
 	result = m_Direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd,
@@ -49,14 +50,15 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
 
 	// Model 객체 생성
-	m_Bitmap = new BitmapClass;
-	result = m_Bitmap->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, textureFilename, 50, 50, 0.5f, 0.5f);
+	m_Sprite = new SpriteClass;
+	result = m_Sprite->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, textureFilename, 200, 200, 0.5f, 0.5f);
 	if (!result)
 	{
 		return false;
 	}
 
-	m_Bitmap->SetRenderLocation(0, 0);
+	m_Sprite->SetRenderLocation(0, 0);
+	m_Sprite->SetDuration(0.15f);
 
 	// ColorShader 생성
 	m_TextureShader = new TextureShaderClass;
@@ -64,6 +66,14 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize ColorShader", L"Error", MB_OK);
+		return false;
+	}
+
+	// ColorShader 생성
+	m_Timer = new TimeClass;
+	result = m_Timer->Initialize();
+	if (!result)
+	{
 		return false;
 	}
 
@@ -85,11 +95,17 @@ void ApplicationClass::Shutdown()
 		m_Camera = 0;
 	}
 
-	if (m_Bitmap)
+	if (m_Sprite)
 	{
-		m_Bitmap->Shutdown();
-		delete m_Bitmap;
-		m_Bitmap = 0;
+		m_Sprite->Shutdown();
+		delete m_Sprite;
+		m_Sprite = 0;
+	}
+
+	if (m_Timer)
+	{
+		delete m_Timer;
+		m_Timer = 0;
 	}
 
 	if (m_TextureShader)
@@ -103,6 +119,11 @@ void ApplicationClass::Shutdown()
 bool ApplicationClass::Frame()
 {
 	bool result;
+
+	m_Timer->Frame();
+	const float deltaTime = m_Timer->GetTime();
+
+	m_Sprite->Update(deltaTime);
 
 	result = Render();
 	if (!result)
@@ -133,11 +154,11 @@ bool ApplicationClass::Render()
 	m_Direct3D->TurnZBufferOff();
 
 	// 기하 도형 입력 세팅
-	m_Bitmap->Render(m_Direct3D->GetDeviceContext());
+	m_Sprite->Render(m_Direct3D->GetDeviceContext());
 
 	// 상수버퍼, 버텍스 쉐이더, 픽셀쉐이더 세팅, Draw Call
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Bitmap->GetIndexCount(),
-		worldMatrix, viewMatrix, orthoMatrix, m_Bitmap->GetTexture());
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Sprite->GetIndexCount(),
+		worldMatrix, viewMatrix, orthoMatrix, m_Sprite->GetTexture());
 	if (!result)
 	{
 		return false;

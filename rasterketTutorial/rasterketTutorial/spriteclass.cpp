@@ -1,12 +1,12 @@
 //***************************************************************************************
-// bitmapclass.cpp by nash224 Visual Studio (C++) 2025 All Rights Reserved.
+// spriteclass.cpp by nash224 Visual Studio (C++) 2025 All Rights Reserved.
 //***************************************************************************************
 
-#include "bitmapclass.h"
+#include "spriteclass.h"
 
 using namespace DirectX;
 
-BitmapClass::BitmapClass()
+SpriteClass::SpriteClass()
 {
 	m_vertexCount = 0;
 	m_indexCount = 0;
@@ -19,22 +19,28 @@ BitmapClass::BitmapClass()
 	m_renderY = 0;
 	m_renderScaleX = 1.0f;
 	m_renderScaleY = 1.0f;
+	m_prevScaleX = 0;
+	m_prevScaleY = 0;
 	m_prevPosX = 0;
 	m_prevPosY = 0;
 
 	m_vertexBuffer = 0;
 	m_indexBuffer = 0;
 
-	m_texture = 0;
+	m_textures = 0;
+	m_textureCount = 0;
+	m_cycleTime = 0.0f;
+	m_frameTime = 0.0f;
+	m_currentTexture = 0;
 }
 
-BitmapClass::~BitmapClass()
+SpriteClass::~SpriteClass()
 {
 
 }
 
-bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
-	int screenWidth, int screenHeight, char* textureFilename, int renderX, int renderY, float ImageScaleX, float ImageScaleY)
+bool SpriteClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
+	int screenWidth, int screenHeight, char* spriteFilename, int renderX, int renderY, float ImageScaleX, float ImageScaleY)
 {
 	bool result;
 
@@ -46,13 +52,15 @@ bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCo
 
 	SetRenderScale(ImageScaleX, ImageScaleY);
 
+	m_frameTime = 0;
+
 	result = InitializeBuffers(device);
 	if (!result)
 	{
 		return false;
 	}
 
-	result = LoadTexture(device, deviceContext, textureFilename);
+	result = LoadTexture(device, deviceContext, spriteFilename);
 	if (!result)
 	{
 		return false;
@@ -61,13 +69,13 @@ bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCo
 	return true;
 }
 
-void BitmapClass::Shutdown()
+void SpriteClass::Shutdown()
 {
 	ReleaseTexture();
 	ShutdownBuffers();
 }
 
-bool BitmapClass::Render(ID3D11DeviceContext* deviceContext)
+bool SpriteClass::Render(ID3D11DeviceContext* deviceContext)
 {
 	bool result;
 
@@ -82,7 +90,24 @@ bool BitmapClass::Render(ID3D11DeviceContext* deviceContext)
 	return true;
 }
 
-bool BitmapClass::InitializeBuffers(ID3D11Device* device)
+void SpriteClass::Update(float frameTime)
+{
+	m_frameTime += frameTime;
+
+	if (m_frameTime >= m_cycleTime)
+	{
+		m_frameTime -= m_cycleTime;
+
+		m_currentTexture++;
+
+		if (m_currentTexture == m_textureCount)
+		{
+			m_currentTexture = 0;
+		}
+	}
+}
+
+bool SpriteClass::InitializeBuffers(ID3D11Device* device)
 {
 	HRESULT result;
 	VertexType* vertices = nullptr;
@@ -175,7 +200,7 @@ failed:
 	return false;
 }
 
-void BitmapClass::ShutdownBuffers()
+void SpriteClass::ShutdownBuffers()
 {
 	if (m_vertexBuffer)
 	{
@@ -190,7 +215,7 @@ void BitmapClass::ShutdownBuffers()
 	}
 }
 
-bool BitmapClass::UpdateBuffers(ID3D11DeviceContext* deviceContext)
+bool SpriteClass::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 {
 	float left, right, top, bottom, ImageWidth, ImageHeight;
 	VertexType* vertices;
@@ -204,8 +229,15 @@ bool BitmapClass::UpdateBuffers(ID3D11DeviceContext* deviceContext)
 		return true;
 	}
 
+	if ((m_prevScaleX == m_renderScaleX) && (m_prevScaleY == m_renderScaleY))
+	{
+		return true;
+	}
+
 	m_prevPosX = m_renderX;
 	m_prevPosY = m_renderY;
+	m_prevScaleX = m_renderScaleX;
+	m_prevScaleY = m_renderScaleY;
 
 	ImageWidth = (float)m_bitmapWidth * m_renderScaleX;
 	ImageHeight = (float)m_bitmapHeight * m_renderScaleY;
@@ -273,7 +305,7 @@ JumpError:
 
 // 도형을 묘사하는 버퍼를 GPU에 적재한다.
 // 도형을 조립 단계(input assembler)를 거치고, 도형을 그리는 방법을 서술한다.
-void BitmapClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
+void SpriteClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 {
 	unsigned int stride;
 	unsigned int offset;
@@ -286,29 +318,73 @@ void BitmapClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-bool BitmapClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename)
+bool SpriteClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename)
 {
+	char textureFilename[128];
+	std::ifstream fin;
+	int i, j;
+	char input;
 	bool result;
 
-	m_texture = new TextureClass;
-	result = m_texture->Initialize(device, deviceContext, filename);
-	if (!result)
+	fin.open(filename);
+	if (fin.fail())
 	{
-		return false;
+		goto JumpError;
 	}
 
-	m_bitmapWidth = m_texture->GetWidth();
-	m_bitmapHeight = m_texture->GetHeight();
+	fin >> m_textureCount;
+
+	m_textures = new TextureClass[m_textureCount];
+
+	fin.get(input);
+
+	for (i = 0; i < m_textureCount; i++)
+	{
+		j = 0;
+		fin.get(input);
+		while (input != '\n')
+		{
+			textureFilename[j] = input;
+			j++;
+			fin.get(input);
+		}
+
+		textureFilename[j] = '\0';
+
+		result = m_textures[i].Initialize(device, deviceContext, textureFilename);
+		if (!result)
+		{
+			goto JumpError;
+		}
+	}
+
+	fin >> m_cycleTime;
+
+	fin.close();
+
+	m_bitmapWidth = m_textures[0].GetWidth();
+	m_bitmapHeight = m_textures[0].GetHeight();
+
+	m_currentTexture = 0;
 
 	return true;
+
+JumpError:
+
+	fin.close();
+	return false;
 }
 
-void BitmapClass::ReleaseTexture()
+void SpriteClass::ReleaseTexture()
 {
-	if (m_texture)
+	if (m_textures)
 	{
-		m_texture->Shutdown();
-		delete m_texture;
-		m_texture = 0;
+		for (int i = 0; i < m_textureCount; i++)
+		{
+			m_textures[i].Shutdown();
+		}
+
+		delete[] m_textures;
+		m_textures = 0;
 	}
 }

@@ -19,7 +19,8 @@
 #include "modelclass.h"
 #include "cameraclass.h"
 #include "textureshaderclass.h"
-#include "bitmapclass.h"
+#include "spriteclass.h"
+#include "timeclass.h"
 
 
 //---------------------------------------------------------------------------------------
@@ -84,7 +85,8 @@ private:
 private:
 	D3DClass* m_Direct3D; // ·»´õ¸µÀ» À§ÇÑ d3d °´Ã¼
 	CameraClass* m_Camera;
-	BitmapClass* m_Bitmap;
+	SpriteClass* m_Sprite;
+	TimeClass* m_Timer;
 	TextureShaderClass* m_TextureShader;
 
 };
