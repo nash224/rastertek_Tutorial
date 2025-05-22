@@ -14,7 +14,7 @@
 
 // 참고 사이트: https://www.rastertek.com/dx11win10tut11.html
 
-// 이번 예제는 2D 렌더링을 다뤄볼 것이다.
+// 주제: 2D 환경에서 스프라이트 조각을 이용한 애니메이션 렌더링
 
 // 조작법: 
 //		- escape: exit application
