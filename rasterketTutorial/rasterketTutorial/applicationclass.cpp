@@ -24,6 +24,7 @@ ApplicationClass::ApplicationClass()
 
 	m_TextString1 = 0;
 	m_TextString2 = 0;
+	m_TextString3 = 0;
 }
 
 ApplicationClass::~ApplicationClass()
@@ -71,9 +72,11 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	const int MAX_TEXT_LENGTH = 32;
 	char testString1[MAX_TEXT_LENGTH];
 	char testString2[MAX_TEXT_LENGTH];
+	char testString3[MAX_TEXT_LENGTH];
 
 	strcpy_s(testString1, "Hello");
 	strcpy_s(testString2, "Goodbye");
+	strcpy_s(testString3, "Text Render");
 
 	// 텍스트 초기화
 	m_TextString1 = new TextClass;
@@ -85,11 +88,26 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	// 텍스트 초기화
 	m_TextString2 = new TextClass;
-	result = m_TextString2->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString2, 10, 10, 1.0f, 1.0f, 0.0f);
+	result = m_TextString2->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString2, 10, 50, 1.0f, 1.0f, 0.0f);
 	if (!result)
 	{
 		return false;
 	}
+	
+	const int SentenceWidth = m_Font->GetSentencePixelLength(testString3);
+	const int SentenceHeight = m_Font->GetFontHeight();
+
+	const int CenterX = (screenWidth - SentenceWidth) / 2;
+	const int CenterY = (screenHeight - SentenceHeight) / 2;
+
+	// 텍스트 초기화
+	m_TextString3 = new TextClass;
+	result = m_TextString3->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString3, CenterX, CenterY, 0.0f, 1.0f, 1.0f);
+	if (!result)
+	{
+		return false;
+	}
+
 
 	return true;
 }
@@ -128,6 +146,13 @@ void ApplicationClass::Shutdown()
 		m_TextString2->Shutdown();
 		delete m_TextString2;
 		m_TextString2 = 0;
+	}
+
+	if (m_TextString3)
+	{
+		m_TextString3->Shutdown();
+		delete m_TextString3;
+		m_TextString3 = 0;
 	}
 
 	if (m_FontShader)
@@ -186,6 +211,16 @@ bool ApplicationClass::Render()
 	// 문장 Draw
 	result = m_FontShader->Render(m_Direct3D->GetDeviceContext(), m_TextString2->GetIndexCount(),
 		worldMatrix, viewMatrix, orthoMatrix, m_Font->GetTexture(), m_TextString2->GetPixelColor());
+	if (!result)
+	{
+		return false;
+	}
+
+	m_TextString3->Render(m_Direct3D->GetDeviceContext());
+
+	// 문장 Draw
+	result = m_FontShader->Render(m_Direct3D->GetDeviceContext(), m_TextString3->GetIndexCount(),
+		worldMatrix, viewMatrix, orthoMatrix, m_Font->GetTexture(), m_TextString3->GetPixelColor());
 	if (!result)
 	{
 		return false;

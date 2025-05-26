@@ -85,6 +85,7 @@ private:
 	FontClass* m_Font;
 	TextClass* m_TextString1;
 	TextClass* m_TextString2;
+	TextClass* m_TextString3;
 
 };
 
