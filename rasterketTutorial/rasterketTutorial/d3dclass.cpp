@@ -17,6 +17,8 @@ D3DClass::D3DClass()
 	, m_depthDisabledStencilState(nullptr)
 	, m_depthStencilView(nullptr)
 	, m_rasterState(nullptr)
+	, m_alphaEnableBlendingState(nullptr)
+	, m_alphaDisableBlendingState(nullptr)
 	, m_projectionMatrix(DirectX::XMMatrixIdentity())
 	, m_WorldMatrix(DirectX::XMMatrixIdentity())
 	, m_orthoMatrix(DirectX::XMMatrixIdentity())
@@ -50,6 +52,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	D3D11_RASTERIZER_DESC rasterDesc;
+	D3D11_BLEND_DESC blendStateDesc;
 	D3D_FEATURE_LEVEL featurelevel = {};
 	ID3D11Texture2D* backBufferPtr = nullptr;
 	float fileOfView = 0.0f;
@@ -386,6 +389,33 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// 일반적으로 2D를 구현할 때 사용될 수 있다.
 	m_orthoMatrix = DirectX::XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 
+	// 블랜드는 렌더 파이프라인의 픽셀쉐이더에서 출력된 픽셀 값이 렌더타겟에 어떻게 덧씌워질 것인가를 결정하는 상태 값
+	ZeroMemory(&blendStateDesc, sizeof(D3D11_BLEND_DESC));
+
+	// 렌더타겟마다 블랜드 지정
+	blendStateDesc.RenderTarget[0].BlendEnable    = TRUE;                      // 블랜드 허용
+	blendStateDesc.RenderTarget[0].SrcBlend       = D3D11_BLEND_ONE;           // 픽셀 쉐이더에서 출력된 값을 그대로 쓰겠다.
+	blendStateDesc.RenderTarget[0].DestBlend      = D3D11_BLEND_INV_SRC_ALPHA; // 소스 텍스처의 알파 값을 역전한 값
+	blendStateDesc.RenderTarget[0].BlendOp        = D3D11_BLEND_OP_ADD;        // 컬러값을 혼합하는 방식
+	blendStateDesc.RenderTarget[0].SrcBlendAlpha  = D3D11_BLEND_ONE;           // 소스값은 그대로
+	blendStateDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;          // 원본 값은 0
+	blendStateDesc.RenderTarget[0].BlendOpAlpha   = D3D11_BLEND_OP_ADD;        // 알파값을 혼합하는 방식
+	blendStateDesc.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+
+	result = m_device->CreateBlendState(&blendStateDesc, &m_alphaEnableBlendingState);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	blendStateDesc.RenderTarget[0].BlendEnable = TRUE; // 블랜딩 안함
+
+	result = m_device->CreateBlendState(&blendStateDesc, &m_alphaDisableBlendingState);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -488,4 +518,28 @@ void D3DClass::TurnZBufferOn()
 void D3DClass::TurnZBufferOff()
 {
 	m_deviceContext->OMSetDepthStencilState(m_depthDisabledStencilState, 1);
+}
+
+void D3DClass::EnableAlphaBlending()
+{
+	float blendFactor[4];
+
+	blendFactor[0] = 0.0f;
+	blendFactor[1] = 0.0f;
+	blendFactor[2] = 0.0f;
+	blendFactor[3] = 0.0f;
+
+	m_deviceContext->OMSetBlendState(m_alphaEnableBlendingState, blendFactor, 0xffffffff);
+}
+
+void D3DClass::DisableAlphaBlending()
+{
+	float blendFactor[4];
+
+	blendFactor[0] = 0.0f;
+	blendFactor[1] = 0.0f;
+	blendFactor[2] = 0.0f;
+	blendFactor[3] = 0.0f;
+
+	m_deviceContext->OMSetBlendState(m_alphaDisableBlendingState, blendFactor, 0xffffffff);
 }

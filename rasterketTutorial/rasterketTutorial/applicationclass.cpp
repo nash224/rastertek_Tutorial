@@ -85,7 +85,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	// 텍스트 초기화
 	m_TextString2 = new TextClass;
-	result = m_TextString2->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString2, 10, 50, 1.0f, 1.0f, 0.0f);
+	result = m_TextString2->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString2, 10, 10, 1.0f, 1.0f, 0.0f);
 	if (!result)
 	{
 		return false;
@@ -169,6 +169,7 @@ bool ApplicationClass::Render()
 
 	// 2D 렌더링에서는 깊이를 끈다.
 	m_Direct3D->TurnZBufferOff();
+	m_Direct3D->EnableAlphaBlending();
 
 	m_TextString1->Render(m_Direct3D->GetDeviceContext());
 
@@ -192,6 +193,7 @@ bool ApplicationClass::Render()
 
 	// 2D렌더링이 끝났다면 다시 깊이를 지원한다.
 	m_Direct3D->TurnZBufferOn();
+	m_Direct3D->DisableAlphaBlending();
 
 	// 화면에 출력
 	m_Direct3D->EndScene();

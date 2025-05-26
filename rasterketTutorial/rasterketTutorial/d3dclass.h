@@ -97,6 +97,9 @@ public:
 	void TurnZBufferOn();
 	void TurnZBufferOff();
 
+	void EnableAlphaBlending();
+	void DisableAlphaBlending();
+
 protected:
 
 private:
@@ -112,6 +115,8 @@ private:
 	ID3D11DepthStencilState* m_depthDisabledStencilState;
 	ID3D11DepthStencilView* m_depthStencilView;
 	ID3D11RasterizerState* m_rasterState;
+	ID3D11BlendState* m_alphaEnableBlendingState;
+	ID3D11BlendState* m_alphaDisableBlendingState;
 	DirectX::XMMATRIX m_projectionMatrix;
 	DirectX::XMMATRIX m_WorldMatrix;
 	DirectX::XMMATRIX m_orthoMatrix;

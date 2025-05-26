@@ -66,9 +66,6 @@
     <ClInclude Include="modelclass.h">
       <Filter>Grapihc\Res</Filter>
     </ClInclude>
-    <ClInclude Include="ShapeClass.h">
-      <Filter>Grapihc\Res</Filter>
-    </ClInclude>
     <ClInclude Include="spriteclass.h">
       <Filter>Grapihc\Res</Filter>
     </ClInclude>
@@ -118,9 +115,6 @@
       <Filter>Time</Filter>
     </ClCompile>
     <ClCompile Include="modelclass.cpp">
-      <Filter>Grapihc\Res</Filter>
-    </ClCompile>
-    <ClCompile Include="ShapeClass.cpp">
       <Filter>Grapihc\Res</Filter>
     </ClCompile>
     <ClCompile Include="spriteclass.cpp">

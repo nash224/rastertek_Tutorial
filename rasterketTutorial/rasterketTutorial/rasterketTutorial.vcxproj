@@ -42,10 +42,6 @@
       <SubType>
       </SubType>
     </ClInclude>
-    <ClInclude Include="ShapeClass.h">
-      <SubType>
-      </SubType>
-    </ClInclude>
     <ClInclude Include="systemclass.h" />
     <ClInclude Include="textclass.h" />
     <ClInclude Include="textureclass.h">
@@ -83,10 +79,6 @@
     <ClCompile Include="lightshaderclass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="modelclass.cpp">
-      <SubType>
-      </SubType>
-    </ClCompile>
-    <ClCompile Include="ShapeClass.cpp">
       <SubType>
       </SubType>
     </ClCompile>
