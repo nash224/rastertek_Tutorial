@@ -12,9 +12,9 @@
 // 원작자의 코드 스타일을 최대한 비슷하게 유지하도록 goto 문을 사용했음을 알려드립니다.
 // 예시) ModelClass::InitializeBuffers 
 
-// 참고 사이트: https://www.rastertek.com/dx11win10tut11.html
+// 참고 사이트: https://www.rastertek.com/dx11win10tut14.html
 
-// 이번 예제는 2D 렌더링을 다뤄볼 것이다.
+// 주제: 폰트 렌더링 및 알파 블렌딩
 
 // 조작법: 
 //		- escape: exit application
@@ -52,6 +52,3 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	return 0;
 }
-
-
-

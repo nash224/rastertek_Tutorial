@@ -14,14 +14,10 @@
 
 #include <windows.h>
 #include "d3dclass.h"
-#include "lightshaderclass.h"
-#include "lightclass.h"
-#include "modelclass.h"
 #include "cameraclass.h"
-#include "textureshaderclass.h"
-#include "spriteclass.h"
-#include "timeclass.h"
-
+#include "fontclass.h"
+#include "fontshaderclass.h"
+#include "textclass.h"
 
 //---------------------------------------------------------------------------------------
 // GLOBALS
@@ -85,9 +81,10 @@ private:
 private:
 	D3DClass* m_Direct3D; // ·»´õ¸µÀ» À§ÇÑ d3d °´Ã¼
 	CameraClass* m_Camera;
-	SpriteClass* m_Sprite;
-	TimeClass* m_Timer;
-	TextureShaderClass* m_TextureShader;
+	FontShaderClass* m_FontShader;
+	FontClass* m_Font;
+	TextClass* m_TextString1;
+	TextClass* m_TextString2;
 
 };
 

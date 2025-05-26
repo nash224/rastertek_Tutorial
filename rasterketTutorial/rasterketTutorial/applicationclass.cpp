@@ -19,9 +19,11 @@ ApplicationClass::ApplicationClass()
 {
 	m_Direct3D = 0;
 	m_Camera = 0;
-	m_Sprite = 0;
-	m_Timer = 0;
-	m_TextureShader = 0;
+	m_Font = 0;
+	m_FontShader = 0;
+
+	m_TextString1 = 0;
+	m_TextString2 = 0;
 }
 
 ApplicationClass::~ApplicationClass()
@@ -49,30 +51,41 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera = new CameraClass;
 	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
 
-	// Model 객체 생성
-	m_Sprite = new SpriteClass;
-	result = m_Sprite->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, textureFilename, 200, 200, 0.5f, 0.5f);
+	// 폰트 초기화
+	m_Font = new FontClass;
+	result = m_Font->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), 0);
 	if (!result)
 	{
 		return false;
 	}
 
-	m_Sprite->SetRenderLocation(0, 0);
-	m_Sprite->SetRenderScale(5.0f, 5.0f);
-	// m_Sprite->SetDuration(0.15f);
-
-	// ColorShader 생성
-	m_TextureShader = new TextureShaderClass;
-	result = m_TextureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	// FontShader 초기화
+	m_FontShader = new FontShaderClass;
+	result = m_FontShader->Initialize(m_Direct3D->GetDevice(), hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize ColorShader", L"Error", MB_OK);
 		return false;
 	}
 
-	// ColorShader 생성
-	m_Timer = new TimeClass;
-	result = m_Timer->Initialize();
+	const int MAX_TEXT_LENGTH = 32;
+	char testString1[MAX_TEXT_LENGTH];
+	char testString2[MAX_TEXT_LENGTH];
+
+	strcpy_s(testString1, "Hello");
+	strcpy_s(testString2, "Goodbye");
+
+	// 텍스트 초기화
+	m_TextString1 = new TextClass;
+	result = m_TextString1->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString1, 10, 10, 0.0f, 1.0f, 0.0f);
+	if (!result)
+	{
+		return false;
+	}
+
+	// 텍스트 초기화
+	m_TextString2 = new TextClass;
+	result = m_TextString2->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString2, 10, 50, 1.0f, 1.0f, 0.0f);
 	if (!result)
 	{
 		return false;
@@ -96,41 +109,38 @@ void ApplicationClass::Shutdown()
 		m_Camera = 0;
 	}
 
-	if (m_Sprite)
+	if (m_Font)
 	{
-		m_Sprite->Shutdown();
-		delete m_Sprite;
-		m_Sprite = 0;
+		m_Font->Shutdown();
+		delete m_Font;
+		m_Font = 0;
 	}
 
-	if (m_Timer)
+	if (m_TextString1)
 	{
-		delete m_Timer;
-		m_Timer = 0;
+		m_TextString1->Shutdown();
+		delete m_TextString1;
+		m_TextString1 = 0;
 	}
 
-	if (m_TextureShader)
+	if (m_TextString2)
 	{
-		m_TextureShader->Shutdown();
-		delete m_TextureShader;
-		m_TextureShader = 0;
+		m_TextString2->Shutdown();
+		delete m_TextString2;
+		m_TextString2 = 0;
+	}
+
+	if (m_FontShader)
+	{
+		m_FontShader->Shutdown();
+		delete m_FontShader;
+		m_FontShader = 0;
 	}
 }
 
 bool ApplicationClass::Frame()
 {
 	bool result;
-
-	m_Timer->Frame();
-	const float deltaTime = m_Timer->GetTime();
-
-	static float PosX = 0;
-	const float movement = 50.0f;
-
-	PosX += movement * deltaTime;
-
-	m_Sprite->SetRenderLocation((int)PosX, 0);
-	m_Sprite->Update(deltaTime);
 
 	result = Render();
 	if (!result)
@@ -160,12 +170,21 @@ bool ApplicationClass::Render()
 	// 2D 렌더링에서는 깊이를 끈다.
 	m_Direct3D->TurnZBufferOff();
 
-	// 기하 도형 입력 세팅
-	m_Sprite->Render(m_Direct3D->GetDeviceContext());
+	m_TextString1->Render(m_Direct3D->GetDeviceContext());
 
-	// 상수버퍼, 버텍스 쉐이더, 픽셀쉐이더 세팅, Draw Call
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Sprite->GetIndexCount(),
-		worldMatrix, viewMatrix, orthoMatrix, m_Sprite->GetTexture());
+	// 문장 Draw
+	result = m_FontShader->Render(m_Direct3D->GetDeviceContext(), m_TextString1->GetIndexCount(),
+		worldMatrix, viewMatrix, orthoMatrix, m_Font->GetTexture(), m_TextString1->GetPixelColor());
+	if (!result)
+	{
+		return false;
+	}
+
+	m_TextString2->Render(m_Direct3D->GetDeviceContext());
+
+	// 문장 Draw
+	result = m_FontShader->Render(m_Direct3D->GetDeviceContext(), m_TextString2->GetIndexCount(),
+		worldMatrix, viewMatrix, orthoMatrix, m_Font->GetTexture(), m_TextString2->GetPixelColor());
 	if (!result)
 	{
 		return false;
