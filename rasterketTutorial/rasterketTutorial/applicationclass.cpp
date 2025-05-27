@@ -22,8 +22,9 @@ ApplicationClass::ApplicationClass()
 	m_Font = 0;
 	m_FontShader = 0;
 
-	m_TextString1 = 0;
-	m_TextString2 = 0;
+	m_FpsString = 0;
+	m_Fps = 0;
+	m_previousFps = 0;
 }
 
 ApplicationClass::~ApplicationClass()
@@ -68,24 +69,17 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	m_Fps = new FpsClass();
+	m_Fps->Initialize();
+
 	const int MAX_TEXT_LENGTH = 32;
 	char testString1[MAX_TEXT_LENGTH];
-	char testString2[MAX_TEXT_LENGTH];
 
-	strcpy_s(testString1, "Hello");
-	strcpy_s(testString2, "Goodbye");
+	strcpy_s(testString1, "Fps: 0");
 
 	// 텍스트 초기화
-	m_TextString1 = new TextClass;
-	result = m_TextString1->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString1, 10, 10, 0.0f, 1.0f, 0.0f);
-	if (!result)
-	{
-		return false;
-	}
-
-	// 텍스트 초기화
-	m_TextString2 = new TextClass;
-	result = m_TextString2->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString2, 10, 10, 1.0f, 1.0f, 0.0f);
+	m_FpsString = new TextClass;
+	result = m_FpsString->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString1, 10, 10, 0.0f, 1.0f, 0.0f);
 	if (!result)
 	{
 		return false;
@@ -116,18 +110,17 @@ void ApplicationClass::Shutdown()
 		m_Font = 0;
 	}
 
-	if (m_TextString1)
+	if (m_FpsString)
 	{
-		m_TextString1->Shutdown();
-		delete m_TextString1;
-		m_TextString1 = 0;
+		m_FpsString->Shutdown();
+		delete m_FpsString;
+		m_FpsString = 0;
 	}
 
-	if (m_TextString2)
+	if (m_Fps)
 	{
-		m_TextString2->Shutdown();
-		delete m_TextString2;
-		m_TextString2 = 0;
+		delete m_Fps;
+		m_Fps = 0;
 	}
 
 	if (m_FontShader)
@@ -141,6 +134,12 @@ void ApplicationClass::Shutdown()
 bool ApplicationClass::Frame()
 {
 	bool result;
+
+	result = UpdateFps();
+	if (!result)
+	{
+		return false;
+	}
 
 	result = Render();
 	if (!result)
@@ -171,21 +170,11 @@ bool ApplicationClass::Render()
 	m_Direct3D->TurnZBufferOff();
 	m_Direct3D->EnableAlphaBlending();
 
-	m_TextString1->Render(m_Direct3D->GetDeviceContext());
+	m_FpsString->Render(m_Direct3D->GetDeviceContext());
 
 	// 문장 Draw
-	result = m_FontShader->Render(m_Direct3D->GetDeviceContext(), m_TextString1->GetIndexCount(),
-		worldMatrix, viewMatrix, orthoMatrix, m_Font->GetTexture(), m_TextString1->GetPixelColor());
-	if (!result)
-	{
-		return false;
-	}
-
-	m_TextString2->Render(m_Direct3D->GetDeviceContext());
-
-	// 문장 Draw
-	result = m_FontShader->Render(m_Direct3D->GetDeviceContext(), m_TextString2->GetIndexCount(),
-		worldMatrix, viewMatrix, orthoMatrix, m_Font->GetTexture(), m_TextString2->GetPixelColor());
+	result = m_FontShader->Render(m_Direct3D->GetDeviceContext(), m_FpsString->GetIndexCount(),
+		worldMatrix, viewMatrix, orthoMatrix, m_Font->GetTexture(), m_FpsString->GetPixelColor());
 	if (!result)
 	{
 		return false;
@@ -197,6 +186,64 @@ bool ApplicationClass::Render()
 
 	// 화면에 출력
 	m_Direct3D->EndScene();
+
+	return true;
+}
+
+bool ApplicationClass::UpdateFps()
+{
+	int fps;
+	char tempString[16];
+	char finalString[16];
+	bool result;
+
+	m_Fps->Frame();
+	fps = m_Fps->GetFps();
+
+	if (m_previousFps == fps)
+	{
+		return true;
+	}
+
+	m_previousFps = fps;
+
+	// 프레임율 표시되는 상한점
+	if (fps > 99999)
+	{
+		fps = 99999;
+	}
+
+	sprintf_s(tempString, "%d", fps);
+
+	sprintf_s(finalString, "fps: ");
+	strcat_s(finalString, tempString);
+
+	float red, green, blue;
+
+	if (fps >= 60)
+	{
+		red = 0.0f;
+		green = 1.0f;
+		blue = 0.0f;
+	}
+	else if (fps < 60)
+	{
+		red = 1.0f;
+		green = 1.0f;
+		blue = 0.0f;
+	}
+	else
+	{
+		red = 1.0f;
+		green = .0f;
+		blue = .0f;
+	}
+
+	result = m_FpsString->UpdateText(m_Direct3D->GetDeviceContext(), m_Font, finalString, 10, 10, red, green, blue);
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }

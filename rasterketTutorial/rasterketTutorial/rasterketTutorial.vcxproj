@@ -22,6 +22,10 @@
     <ClInclude Include="applicationclass.h" />
     <ClInclude Include="fontclass.h" />
     <ClInclude Include="fontshaderclass.h" />
+    <ClInclude Include="fpsclass.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
     <ClInclude Include="spriteclass.h" />
     <ClInclude Include="cameraclass.h">
       <SubType>
@@ -61,6 +65,10 @@
     <ClCompile Include="applicationclass.cpp" />
     <ClCompile Include="fontclass.cpp" />
     <ClCompile Include="fontshaderclass.cpp" />
+    <ClCompile Include="fpsclass.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="spriteclass.cpp" />
     <ClCompile Include="cameraclass.cpp">
       <SubType>

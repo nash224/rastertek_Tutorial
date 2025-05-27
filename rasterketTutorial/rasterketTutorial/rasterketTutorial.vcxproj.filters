@@ -28,6 +28,9 @@
     <Filter Include="Time">
       <UniqueIdentifier>{a24028ce-1aed-4d3d-820d-88e0e2788a0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object\FPS">
+      <UniqueIdentifier>{d20cf1aa-8ab9-4bd1-abbf-26f7a6296dd9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colorshaderclass.h">
@@ -77,6 +80,9 @@
     </ClInclude>
     <ClInclude Include="textclass.h">
       <Filter>Grapihc\Res</Filter>
+    </ClInclude>
+    <ClInclude Include="fpsclass.h">
+      <Filter>Object\FPS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +134,9 @@
     </ClCompile>
     <ClCompile Include="textclass.cpp">
       <Filter>Grapihc\Res</Filter>
+    </ClCompile>
+    <ClCompile Include="fpsclass.cpp">
+      <Filter>Object\FPS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

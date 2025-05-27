@@ -18,6 +18,7 @@
 #include "fontclass.h"
 #include "fontshaderclass.h"
 #include "textclass.h"
+#include "fpsclass.h"
 
 //---------------------------------------------------------------------------------------
 // GLOBALS
@@ -78,13 +79,17 @@ private:
 	 */
 	bool Render();
 
+	bool UpdateFps();
+
 private:
 	D3DClass* m_Direct3D; // ·»´õ¸µÀ» À§ÇÑ d3d °´Ã¼
 	CameraClass* m_Camera;
 	FontShaderClass* m_FontShader;
 	FontClass* m_Font;
-	TextClass* m_TextString1;
-	TextClass* m_TextString2;
+	TextClass* m_FpsString;
+	FpsClass* m_Fps;
+
+	int m_previousFps;
 
 };
 
