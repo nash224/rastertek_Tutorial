@@ -7,6 +7,41 @@
 #ifndef __DEFINE_INPUTCLASS_H_
 #define __DEFINE_INPUTCLASS_H_
 
+
+// dx Input API는 버전 8을 사용해도 워낙 성능이 좋기 때문에 버전을 바꿀 필요는 없다.
+// 그러나 경고문이 출력을 방지하기 위해 입력 API 버전을 알려줘야 한다.
+//---------------------------------------------------------------------------------------
+// PRE-PROCESSING DIRECTIVES 
+//---------------------------------------------------------------------------------------
+#define DIRECTINPUT_VERSION 0x0800
+
+
+//---------------------------------------------------------------------------------------
+// LINKING 
+//---------------------------------------------------------------------------------------
+#pragma comment(lib, "dinput8.lib")
+#pragma comment(lib, "dxguid.lib")
+
+//---------------------------------------------------------------------------------------
+// INCLUDES 
+//---------------------------------------------------------------------------------------
+#include <dinput.h>
+
+//---------------------------------------------------------------------------------------
+// Classname: InputClass
+//---------------------------------------------------------------------------------------
+
+/*
+목적:
+	DirectX Input API로 마우스 및 키보드 입력에 대한 기능을 제공한다.
+
+기능:
+	- 고성능의 입력 처리
+	- 마우스 이동량 측정
+	- 마우스 위치 갱신
+	- 키보드 눌림 상태 갱신
+*/
+
 class InputClass
 {
 public:
@@ -20,29 +55,34 @@ public:
 	InputClass& operator=(const InputClass& _Other) = delete;
 	InputClass& operator=(InputClass&& _Other) noexcept = delete;
 
-	void Initialize();
 
-	void KeyDown(unsigned int _Input);
-	void KeyUp(unsigned int _Input);
+	bool IsEscapePressed() const;
+	void GetMouseLocation(int& mouseX, int& mouseY) const;
+	bool IsMousePressed() const;
 
-
-	/**
-	 * @brief		IsKeyDown	키의 상태를 반환한다.
-	 *
-	 * @param		_key	배열에 할당받은 키 값
-	 *
-	 * @return		bool	키의 눌림 여부 반환
-	 *
-	 * @warning		배열 인덱스 유효검사를 하지 않음
-	 *				매개변수 _Key 값이 256 범위를 넘길 경우, 오류 발생
-	 *			
-	 */
-	bool IsKeyDown(unsigned int _Key) const;
+	// DirectX Input 인터페이스를 생성하고 초기화한다.
+	bool Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight);
+	void Shutdown();
+	// 키보드 및 마우스 입력 상태를 갱신한다.
+	bool Frame();
 
 protected:
 
 private:
-	char m_keys[256];
+	bool ReadKeyboard();
+	bool ReadMouse();
+	void ProcessInput();
+
+private:
+	IDirectInput8* m_directInput;
+	IDirectInputDevice8* m_keyboard;
+	IDirectInputDevice8* m_mouse;
+	unsigned char m_keyboardState[256];
+	DIMOUSESTATE m_mouseState;
+	int m_screenWidth;
+	int m_screenHeight;
+	int m_mouseX;
+	int m_mouseY;
 
 };
 

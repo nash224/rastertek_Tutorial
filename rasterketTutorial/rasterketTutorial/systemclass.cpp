@@ -39,7 +39,11 @@ bool SystemClass::Initialize()
 
 	// 입력 객체 생성 및 초기화
 	m_Input = new InputClass;
-	m_Input->Initialize();
+	result = m_Input->Initialize(m_hinstance, m_hwnd, screenWidth, screenHeight);
+	if (!result)
+	{
+		return false;
+	}
 
 	// 게임 루프 객체 생성 및 초기화
 	// ApplictaionClass
@@ -62,6 +66,7 @@ void SystemClass::Shutdown()
 	// 입력 객체 정리
 	if (m_Input)
 	{
+		m_Input->Shutdown();
 		delete m_Input;
 		m_Input = 0;
 	}
@@ -111,32 +116,7 @@ void SystemClass::Run()
 
 LRESULT SystemClass::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
 {
-	switch (umsg)
-	{
-	case WM_KEYDOWN:
-	{
-		m_Input->KeyDown((unsigned int) wparam);
-		static std::wstring output;
-		output.clear();
-
-		std::string input = std::to_string((unsigned int)wparam);
-		output.assign(input.begin(), input.end());
-		output += L"Key has been pressed.\n";
-		OutputDebugString(output.c_str());
-		return 0;
-	}
-	case WM_KEYUP:
-	{
-		m_Input->KeyUp((unsigned int) wparam);
-		return 0;
-	}
-	default:
-	{
-		// 다른 메세지들은 사용하지 않겠다고 시스템에 알리낟.
-		return DefWindowProc(hwnd, umsg, wparam, lparam);
-	}
-	}
-	return LRESULT();
+	return DefWindowProc(hwnd, umsg, wparam, lparam);
 }
 
 bool SystemClass::Frame()
@@ -144,13 +124,14 @@ bool SystemClass::Frame()
 	bool result = true;
 
 	// 입력처리
-	if (m_Input->IsKeyDown(VK_ESCAPE))
+	result = m_Input->Frame();
+	if (!result)
 	{
 		return false;
 	}
 
 	// 어플리케이션 게임 로직 루프
-	result = m_Application->Frame();
+	result = m_Application->Frame(m_Input);
 	if (!result)
 	{
 		return false;

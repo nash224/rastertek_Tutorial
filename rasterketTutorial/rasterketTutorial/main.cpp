@@ -12,12 +12,14 @@
 // 원작자의 코드 스타일을 최대한 비슷하게 유지하도록 goto 문을 사용했음을 알려드립니다.
 // 예시) ModelClass::InitializeBuffers 
 
-// 참고 사이트: https://www.rastertek.com/dx11win10tut14.html
+// 참고 사이트: https://www.rastertek.com/dx11win10tut16.html
 
-// 주제: 폰트 렌더링 및 알파 블렌딩
+// 주제: DirectX Input API로 키보드와 마우스 입력을 처리하는 방법을 알아볼 것이다.
 
 // 조작법: 
-//		- escape: exit application
+//		- escape:				exit application
+//		- move mouse:			for rendering mouse location.
+//		- mouse's first button: for rendering to text what is the current status of the mouse.
 
 
 #include "systemclass.h"

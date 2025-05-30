@@ -19,6 +19,7 @@
 #include "fontshaderclass.h"
 #include "textclass.h"
 #include "fpsclass.h"
+#include "inputclass.h"
 
 //---------------------------------------------------------------------------------------
 // GLOBALS
@@ -65,10 +66,12 @@ public:
 
 	/**
 	 * @brief		Frame		월드에 존재하는 오브젝트의 상태를 갱신한다.
+	 * 
+	 * @param		Input		SystemClass의 입력 시스템 객체
 	 *
 	 * @return		void
 	 */
-	bool Frame();
+	bool Frame(InputClass* Input);
 
 private:
 
@@ -80,6 +83,7 @@ private:
 	bool Render();
 
 	bool UpdateFps();
+	bool UpdateMouseStrings(int mouseX, int mouseY, bool mouseDown);
 
 private:
 	D3DClass* m_Direct3D; // 렌더링을 위한 d3d 객체
@@ -87,6 +91,7 @@ private:
 	FontShaderClass* m_FontShader;
 	FontClass* m_Font;
 	TextClass* m_FpsString;
+	TextClass* m_MouseString;
 	FpsClass* m_Fps;
 
 	int m_previousFps;

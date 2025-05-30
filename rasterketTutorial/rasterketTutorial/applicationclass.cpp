@@ -25,6 +25,7 @@ ApplicationClass::ApplicationClass()
 	m_FpsString = 0;
 	m_Fps = 0;
 	m_previousFps = 0;
+	m_MouseString = 0;
 }
 
 ApplicationClass::~ApplicationClass()
@@ -74,12 +75,36 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	const int MAX_TEXT_LENGTH = 32;
 	char testString1[MAX_TEXT_LENGTH];
+	char mouseString1[MAX_TEXT_LENGTH];
+	char mouseString2[MAX_TEXT_LENGTH];
+	char mouseString3[MAX_TEXT_LENGTH];
 
 	strcpy_s(testString1, "Fps: 0");
+	strcpy_s(mouseString1, "Mouse X: 0");
+	strcpy_s(mouseString2, "Mouse Y: 0");
+	strcpy_s(mouseString3, "Mouse Button: No");
 
 	// 텍스트 초기화
 	m_FpsString = new TextClass;
 	result = m_FpsString->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, testString1, 10, 10, 0.0f, 1.0f, 0.0f);
+	if (!result)
+	{
+		return false;
+	}
+
+	// 텍스트 초기화
+	m_MouseString = new TextClass[3];
+	result = m_MouseString[0].Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, mouseString1, 10, 35, 0.0f, 1.0f, 0.0f);
+	if (!result)
+	{
+		return false;
+	}
+	result = m_MouseString[1].Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, mouseString2, 10, 60, 0.0f, 1.0f, 0.0f);
+	if (!result)
+	{
+		return false;
+	}
+	result = m_MouseString[2].Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, MAX_TEXT_LENGTH, m_Font, mouseString3, 10, 85, 0.0f, 1.0f, 0.0f);
 	if (!result)
 	{
 		return false;
@@ -129,11 +154,38 @@ void ApplicationClass::Shutdown()
 		delete m_FontShader;
 		m_FontShader = 0;
 	}
+
+	if (m_MouseString)
+	{
+		m_MouseString[0].Shutdown();
+		m_MouseString[1].Shutdown();
+		m_MouseString[2].Shutdown();
+		delete[] m_MouseString;
+		m_MouseString = 0;
+	}
 }
 
-bool ApplicationClass::Frame()
+bool ApplicationClass::Frame(InputClass* Input)
 {
+	int mouseX, mouseY;
+	bool mouseDown;
 	bool result;
+
+	if (Input->IsEscapePressed())
+	{
+		return false;
+	}
+
+	// 마우스의 위치를 전달받는다.
+	Input->GetMouseLocation(mouseX, mouseY);
+
+	mouseDown = Input->IsMousePressed();
+
+	result = UpdateMouseStrings(mouseX, mouseY, mouseDown);
+	if (!result)
+	{
+		return false;
+	}
 
 	result = UpdateFps();
 	if (!result)
@@ -141,6 +193,7 @@ bool ApplicationClass::Frame()
 		return false;
 	}
 
+	// 화면에 무언가를 그린다.
 	result = Render();
 	if (!result)
 	{
@@ -169,6 +222,18 @@ bool ApplicationClass::Render()
 	// 2D 렌더링에서는 깊이를 끈다.
 	m_Direct3D->TurnZBufferOff();
 	m_Direct3D->EnableAlphaBlending();
+
+	for (int i = 0; i < 3; i++)
+	{
+		m_MouseString[i].Render(m_Direct3D->GetDeviceContext());
+
+		result = m_FontShader->Render(m_Direct3D->GetDeviceContext(), m_MouseString[i].GetIndexCount(),
+			worldMatrix, viewMatrix, orthoMatrix, m_Font->GetTexture(), m_MouseString[i].GetPixelColor());
+		if (!result)
+		{
+			return false;
+		}
+	}
 
 	m_FpsString->Render(m_Direct3D->GetDeviceContext());
 
@@ -240,6 +305,44 @@ bool ApplicationClass::UpdateFps()
 	}
 
 	result = m_FpsString->UpdateText(m_Direct3D->GetDeviceContext(), m_Font, finalString, 10, 10, red, green, blue);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+// 화면에 출력할 마우스 상태 정보를 갱신한다.
+bool ApplicationClass::UpdateMouseStrings(int mouseX, int mouseY, bool mouseDown)
+{
+	char tempString[16];
+	char FinalString[32];
+	bool result;
+
+	sprintf_s(tempString, "%d", mouseX);
+	strcpy_s(FinalString, "Mouse X: ");
+	strcat_s(FinalString, tempString);
+
+	result = m_MouseString[0].UpdateText(m_Direct3D->GetDeviceContext(), m_Font, FinalString, 10, 35, 1.0f, 1.0f, 1.0f);
+	if (!result)
+	{
+		return false;
+	}
+
+	sprintf_s(tempString, "%d", mouseY);
+	strcpy_s(FinalString, "Mouse Y: ");
+	strcat_s(FinalString, tempString);
+
+	result = m_MouseString[1].UpdateText(m_Direct3D->GetDeviceContext(), m_Font, FinalString, 10, 60, 1.0f, 1.0f, 1.0f);
+	if (!result)
+	{
+		return false;
+	}
+
+	strcpy_s(FinalString, mouseDown ? "Mouse Button: Yes" : "Mouse Button: No");
+
+	result = m_MouseString[2].UpdateText(m_Direct3D->GetDeviceContext(), m_Font, FinalString, 10, 85, 1.0f, 1.0f, 1.0f);
 	if (!result)
 	{
 		return false;
