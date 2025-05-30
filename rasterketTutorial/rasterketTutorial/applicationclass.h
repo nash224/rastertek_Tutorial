@@ -20,13 +20,15 @@
 #include "textclass.h"
 #include "fpsclass.h"
 #include "inputclass.h"
+#include "spriteclass.h"
+#include "textureshaderclass.h"
 
 //---------------------------------------------------------------------------------------
 // GLOBALS
 //---------------------------------------------------------------------------------------
 
 const bool FULL_SCREEN = false;
-const bool VSYNC_ENABLED = true;
+const bool VSYNC_ENABLED = false;
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.3f;
 
@@ -93,6 +95,9 @@ private:
 	TextClass* m_FpsString;
 	TextClass* m_MouseString;
 	FpsClass* m_Fps;
+	SpriteClass* m_Cursor;
+	TextureShaderClass* m_TextureShader;
+	
 
 	int m_previousFps;
 

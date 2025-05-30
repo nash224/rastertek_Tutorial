@@ -26,6 +26,9 @@ ApplicationClass::ApplicationClass()
 	m_Fps = 0;
 	m_previousFps = 0;
 	m_MouseString = 0;
+
+	m_Cursor = 0;
+	m_TextureShader = 0;
 }
 
 ApplicationClass::~ApplicationClass()
@@ -37,8 +40,10 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
 	bool result;
 	char textureFilename[128];
+	char cursorFilename[128];
 
 	strcpy_s(textureFilename, "../rasterketTutorial/Engine/data/sprite_data_02.txt");
+	strcpy_s(cursorFilename, "../rasterketTutorial/Engine/data/Game_Boy.txt");
 
 	m_Direct3D = new D3DClass;
 	result = m_Direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd,
@@ -110,6 +115,16 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	m_Cursor = new SpriteClass;
+	result = m_Cursor->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), screenWidth, screenHeight, cursorFilename, 0, 0, 2.0f, 2.0f);
+	if (!result)
+	{
+		return false;
+	}
+
+	m_TextureShader = new TextureShaderClass;
+	result = m_TextureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+
 	return true;
 }
 
@@ -163,6 +178,20 @@ void ApplicationClass::Shutdown()
 		delete[] m_MouseString;
 		m_MouseString = 0;
 	}
+
+	if (m_Cursor)
+	{
+		m_Cursor->Shutdown();
+		delete m_Cursor;
+		m_Cursor = 0;
+	}
+
+	if (m_TextureShader)
+	{
+		m_TextureShader->Shutdown();
+		delete m_TextureShader;
+		m_TextureShader = 0;
+	}
 }
 
 bool ApplicationClass::Frame(InputClass* Input)
@@ -192,6 +221,8 @@ bool ApplicationClass::Frame(InputClass* Input)
 	{
 		return false;
 	}
+
+	m_Cursor->SetRenderLocation(mouseX, mouseY);
 
 	// 화면에 무언가를 그린다.
 	result = Render();
@@ -244,6 +275,19 @@ bool ApplicationClass::Render()
 	{
 		return false;
 	}
+
+	result = m_Cursor->Render(m_Direct3D->GetDeviceContext());
+	if (!result)
+	{
+		return false;
+	}
+
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cursor->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_Cursor->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
 
 	// 2D렌더링이 끝났다면 다시 깊이를 지원한다.
 	m_Direct3D->TurnZBufferOn();
